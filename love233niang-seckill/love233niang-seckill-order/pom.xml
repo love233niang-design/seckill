@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.love233niang</groupId>
+        <artifactId>love233niang-seckill</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>love233niang-seckill-order</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${artifactId}</name>
+    <description>订单模块，放置秒杀下单、订单列表、订单详情、取消订单、模拟支付等接口</description>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.love233niang</groupId>
+            <artifactId>love233niang-seckill-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

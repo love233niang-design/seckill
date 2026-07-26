@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for love233niang-seckill" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../../maven_jar/apache-maven-3.9.4/mvn_repo/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="love233niang-seckill-common" />
+        <module name="love233niang-seckill-order" />
+        <module name="love233niang-seckill-goods" />
+        <module name="love233niang-seckill-app" />
+        <module name="love233niang-seckill-user" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="love233niang-seckill-app" options="-parameters" />
+      <module name="love233niang-seckill-common" options="-parameters" />
+      <module name="love233niang-seckill-goods" options="-parameters" />
+      <module name="love233niang-seckill-order" options="-parameters" />
+      <module name="love233niang-seckill-user" options="-parameters" />
+    </option>
+  </component>
+</project>
