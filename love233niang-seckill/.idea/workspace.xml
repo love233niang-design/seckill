@@ -4,12 +4,47 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a7e37f80-88b7-4c58-93c2-f4dda5fd3846" name="Changes" comment="" />
+    <list default="true" id="a7e37f80-88b7-4c58-93c2-f4dda5fd3846" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/enums/UserStatusEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/RegisterUserReqVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-app/src/main/java/com/love233niang/seckill/app/SeckillApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-app/src/main/java/com/love233niang/seckill/app/SeckillApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BaseExceptionInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BaseExceptionInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BizException.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BizException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/JsonUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/JsonUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/Response.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -24,32 +59,45 @@
   &quot;fromUser&quot;: false
 }</component>
   <component name="ProjectId" id="3GyjEr6w62niThthaYhgv236ZFQ" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;JUnit.UserTests.testInsertUser.executor&quot;: &quot;Run&quot;,
-    &quot;Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.love233niang-seckill-common [org.mybatis.generator:mybatis-generator-maven-plugin:1.3.5:generate].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Spring Boot.SeckillApplication.executor&quot;: &quot;Run&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/JAVA_IDE_WORK/JavaWork_Space/seckill/love233niang-seckill&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.build.tools.auto.reload&quot;: &quot;ALL&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;build.tools&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JUnit.UserTests.testInsertUser.executor": "Run",
+    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
+    "Maven.love233niang-seckill-common [org.mybatis.generator:mybatis-generator-maven-plugin:1.3.5:generate].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.SeckillApplication.executor": "Run",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "E:/JAVA_IDE_WORK/JavaWork_Space/seckill/love233niang-seckill",
+    "nodejs_package_manager_path": "npm",
+    "settings.build.tools.auto.reload": "ALL",
+    "settings.editor.selected.configurable": "build.tools",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.love233niang.seckill.user.service.impl" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\JAVA_IDE_WORK\idea Javawork\seckill\love233niang-seckill\love233niang-seckill-app\src\main\resources" />
     </key>
@@ -113,6 +161,8 @@
       <workItem from="1784952030363" duration="831000" />
       <workItem from="1784956991560" duration="4015000" />
       <workItem from="1784967432662" duration="1255000" />
+      <workItem from="1785113178084" duration="30000" />
+      <workItem from="1785120275061" duration="2004000" />
     </task>
     <servers />
   </component>

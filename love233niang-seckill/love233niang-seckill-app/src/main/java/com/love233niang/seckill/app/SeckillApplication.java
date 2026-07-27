@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/3/31 21:40
  * @Version: v1.0.0
  * @Description: 秒杀系统启动类

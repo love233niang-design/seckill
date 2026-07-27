@@ -7,8 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 
 /**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
+ * @author: hq
+ * @url: www.love233niang.com
  * @date: 2023-08-14 16:27
  * @description: JSON 工具类
  **/

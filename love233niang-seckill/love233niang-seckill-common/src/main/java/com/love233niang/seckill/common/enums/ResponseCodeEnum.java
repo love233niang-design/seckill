@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
+ * @author: hq
+ * @url: www.love233niang.com
  * @date: 2023-08-15 10:33
  * @description: 响应异常码
  **/
@@ -20,6 +20,10 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
 
 
     // ----------- 业务异常状态码 -----------
+
+    // ----------- 用户模块异常状态码 -----------
+    USER_MOBILE_EXISTS("20001", "该手机号已注册"),
+    USER_VERIFY_CODE_ERROR("20002", "验证码错误"),
     ;
 
     // 异常码

@@ -14,13 +14,17 @@
     <description>用户模块，放置用户登录、注册、发送验证码等接口</description>
 
 
-
     <dependencies>
         <dependency>
             <groupId>com.love233niang</groupId>
             <artifactId>love233niang-seckill-common</artifactId>
         </dependency>
 
+        <!-- Spring Security Crypto（仅使用 BCrypt 密码加密，不引入完整 Spring Security） -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

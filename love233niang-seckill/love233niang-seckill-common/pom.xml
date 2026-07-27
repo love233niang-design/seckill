@@ -89,6 +89,24 @@
             <artifactId>disruptor</artifactId>
         </dependency>
 
+        <!-- SaToken 权限认证框架（适配 Spring Boot 3） -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Validation（参数校验，@NotBlank、@NotNull 等） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Hutool 工具类库 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

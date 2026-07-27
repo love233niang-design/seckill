@@ -14,4 +14,13 @@ public interface UserDOMapper {
     int updateByPrimaryKeySelective(UserDO record);
 
     int updateByPrimaryKey(UserDO record);
+
+
+    /**
+     * 根据手机号查询用户 ID（仅判断手机号是否已注册，不返回完整用户信息）
+     *
+     * @param mobile
+     * @return
+     */
+    Long selectIdByMobile(String mobile);
 }

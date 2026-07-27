@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
+ * @author: hq
+ * @url: www.love233niang.com
  * @date: 2026/4/5
  * @description:
  **/

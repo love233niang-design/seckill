@@ -14,12 +14,13 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../../maven_jar/apache-maven-3.9.4/mvn_repo/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$PROJECT_DIR$/../../../maven_jar/apache-maven-3.9.4/mvn_repo/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="love233niang-seckill-common" />
         <module name="love233niang-seckill-order" />
         <module name="love233niang-seckill-goods" />
-        <module name="love233niang-seckill-app" />
         <module name="love233niang-seckill-user" />
+        <module name="love233niang-seckill-app" />
       </profile>
     </annotationProcessing>
   </component>

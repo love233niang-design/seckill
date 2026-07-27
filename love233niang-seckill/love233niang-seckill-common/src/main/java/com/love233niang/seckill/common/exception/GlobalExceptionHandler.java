@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import java.util.Optional;
 
 /**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
+ * @author: hq
+ * @url: www.love233niang.com
  * @date: 2023-08-15 10:14
  * @description: 全局异常处理
  **/
