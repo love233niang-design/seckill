@@ -1,2 +1,6 @@
 .idea/
 logs/
+
+# 忽略所有 profile 特定的 yml 文件（如 application-dev.yml, application-test.yml）
+**/application-*.yml
+**/application-*.yaml
