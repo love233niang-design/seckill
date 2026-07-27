@@ -210,3 +210,26 @@ org.springframework.web.HttpRequestMethodNotSupportedException: Request method '
 2026-07-27 11:50:13.777 INFO  [http-nio-8080-exec-2] o.a.c.c.C.[.[.[/] : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2026-07-27 11:50:13.777 INFO  [http-nio-8080-exec-2] o.s.w.s.DispatcherServlet : Initializing Servlet 'dispatcherServlet'
 2026-07-27 11:50:13.779 INFO  [http-nio-8080-exec-2] o.s.w.s.DispatcherServlet : Completed initialization in 2 ms
+2026-07-27 16:07:36.462 INFO  [SpringApplicationShutdownHook] o.s.b.w.e.t.GracefulShutdown : Commencing graceful shutdown. Waiting for active requests to complete
+2026-07-27 16:07:36.470 INFO  [tomcat-shutdown] o.s.b.w.e.t.GracefulShutdown : Graceful shutdown complete
+2026-07-27 16:07:46.342 INFO  [background-preinit] o.h.v.i.u.Version : HV000001: Hibernate Validator 8.0.3.Final
+2026-07-27 16:07:46.393 INFO  [main] c.l.s.a.SeckillApplication : Starting SeckillApplication using Java 21.0.11 with PID 460 (E:\JAVA_IDE_WORK\JavaWork_Space\seckill\love233niang-seckill\love233niang-seckill-app\target\classes started by 33645 in E:\JAVA_IDE_WORK\JavaWork_Space\seckill\love233niang-seckill)
+2026-07-27 16:07:46.395 INFO  [main] c.l.s.a.SeckillApplication : The following 1 profile is active: "dev"
+2026-07-27 16:07:47.219 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-07-27 16:07:47.222 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-07-27 16:07:47.257 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
+2026-07-27 16:07:48.106 INFO  [main] o.s.b.w.e.t.TomcatWebServer : Tomcat initialized with port 8080 (http)
+2026-07-27 16:07:48.123 INFO  [main] o.a.c.h.Http11NioProtocol : Initializing ProtocolHandler ["http-nio-8080"]
+2026-07-27 16:07:48.125 INFO  [main] o.a.c.c.StandardService : Starting service [Tomcat]
+2026-07-27 16:07:48.125 INFO  [main] o.a.c.c.StandardEngine : Starting Servlet engine: [Apache Tomcat/10.1.49]
+2026-07-27 16:07:48.189 INFO  [main] o.a.c.c.C.[.[.[/] : Initializing Spring embedded WebApplicationContext
+2026-07-27 16:07:48.189 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1744 ms
+2026-07-27 16:07:49.363 INFO  [main] o.a.c.h.Http11NioProtocol : Starting ProtocolHandler ["http-nio-8080"]
+2026-07-27 16:07:49.392 INFO  [main] o.s.b.w.e.t.TomcatWebServer : Tomcat started on port 8080 (http) with context path '/'
+2026-07-27 16:07:49.404 INFO  [main] c.l.s.a.SeckillApplication : Started SeckillApplication in 3.646 seconds (process running for 4.606)
+2026-07-27 16:08:03.404 INFO  [http-nio-8080-exec-2] o.a.c.c.C.[.[.[/] : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-27 16:08:03.404 INFO  [http-nio-8080-exec-2] o.s.w.s.DispatcherServlet : Initializing Servlet 'dispatcherServlet'
+2026-07-27 16:08:03.404 INFO  [http-nio-8080-exec-2] o.s.w.s.DispatcherServlet : Completed initialization in 0 ms
+2026-07-27 16:08:03.601 INFO  [http-nio-8080-exec-2] c.l.s.c.a.ApiOperationLogAspect : ====== 请求开始: [发送验证码], 入参: {"mobile":"18019911108","type":1}, 请求类: UserController, 请求方法: sendVerifyCode =================================== 
+2026-07-27 16:08:04.205 INFO  [biz-task-1] c.l.s.u.s.i.UserServiceImpl : ==> 验证码发送成功, mobile: 18019911108, verifyCode: 866180
+2026-07-27 16:08:04.207 INFO  [http-nio-8080-exec-2] c.l.s.c.a.ApiOperationLogAspect : ====== 请求结束: [发送验证码], 耗时: 624ms, 出参: {"success":true,"message":null,"errorCode":null,"data":null} =================================== 

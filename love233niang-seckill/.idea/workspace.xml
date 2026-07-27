@@ -5,18 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a7e37f80-88b7-4c58-93c2-f4dda5fd3846" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/enums/LoginTypeEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/LoginUserReqVO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/LoginUserRspVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/love233niang-seckill-error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/love233niang-seckill-error.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/config/RedisConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/config/ThreadPoolConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/enums/VerifyCodeTypeEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/SendVerifyCodeReqVO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application-dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/domain/mapper/UserDOMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/domain/mapper/UserDOMapper.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/enums/ResponseCodeEnum.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/enums/ResponseCodeEnum.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/mapper/UserDOMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/mapper/UserDOMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" afterDir="false" />
@@ -160,7 +157,7 @@
       <workItem from="1784956991560" duration="4015000" />
       <workItem from="1784967432662" duration="1255000" />
       <workItem from="1785113178084" duration="30000" />
-      <workItem from="1785120275061" duration="3890000" />
+      <workItem from="1785120275061" duration="13200000" />
     </task>
     <servers />
   </component>

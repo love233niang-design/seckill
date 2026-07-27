@@ -5,6 +5,7 @@ import com.love233niang.seckill.common.utils.Response;
 import com.love233niang.seckill.user.model.vo.LoginUserReqVO;
 import com.love233niang.seckill.user.model.vo.LoginUserRspVO;
 import com.love233niang.seckill.user.model.vo.RegisterUserReqVO;
+import com.love233niang.seckill.user.model.vo.SendVerifyCodeReqVO;
 
 /**
  * @Author: hq
@@ -27,5 +28,12 @@ public interface UserService {
      * @return
      */
     Response<LoginUserRspVO> login(LoginUserReqVO loginUserReqVO);
+
+    /**
+     * 发送验证码
+     * @param sendVerifyCodeReqVO
+     * @return
+     */
+    Response<?> sendVerifyCode(SendVerifyCodeReqVO sendVerifyCodeReqVO);
 }
 
