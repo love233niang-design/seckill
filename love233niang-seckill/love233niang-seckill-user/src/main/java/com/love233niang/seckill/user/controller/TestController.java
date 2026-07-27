@@ -1,5 +1,6 @@
 package com.love233niang.seckill.user.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.love233niang.seckill.common.aspect.ApiOperationLog;
 import com.love233niang.seckill.common.enums.ResponseCodeEnum;
 import com.love233niang.seckill.common.exception.BizException;
@@ -59,5 +60,24 @@ public class TestController {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         String loggerClass = ctx.getRootLogger().getClass().getName();
         return Response.success("Root Logger 实现类: " + loggerClass);
+    }
+
+    /**
+     * 测试是否真的登录了
+     */
+    @GetMapping("/test/isLogin")
+    public Response<?> isLogin() {
+        // 调用 SaToken 提供的方法，判断当前请求是否已登录
+        boolean isLogin = StpUtil.isLogin();
+
+        if (isLogin) {
+            // 已登录，获取当前登录的用户 ID
+            long loginId = StpUtil.getLoginIdAsLong();
+            log.info("==> 当前已登录, userId: {}", loginId);
+            return Response.success("当前登录用户 ID: " + loginId);
+        } else {
+            // 未登录
+            return Response.success("当前未登录");
+        }
     }
 }

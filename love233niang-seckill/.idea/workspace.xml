@@ -5,26 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a7e37f80-88b7-4c58-93c2-f4dda5fd3846" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/enums/UserStatusEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/RegisterUserReqVO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/enums/LoginTypeEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/LoginUserReqVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/model/vo/LoginUserRspVO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/love233niang-seckill-error.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/love233niang-seckill-error.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/love233niang-seckill-info.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-app/src/main/java/com/love233niang/seckill/app/SeckillApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-app/src/main/java/com/love233niang/seckill/app/SeckillApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-app/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/domain/mapper/UserDOMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/enums/ResponseCodeEnum.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BaseExceptionInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BaseExceptionInterface.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BizException.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/BizException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/JsonUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/JsonUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/java/com/love233niang/seckill/common/utils/Response.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/src/main/resources/mapper/UserDOMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/domain/mapper/UserDOMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/domain/mapper/UserDOMapper.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/enums/ResponseCodeEnum.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/com/love233niang/seckill/common/enums/ResponseCodeEnum.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/mapper/UserDOMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-common/target/classes/mapper/UserDOMapper.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/TestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/src/main/java/com/love233niang/seckill/user/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/controller/UserController.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/controller/UserController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/service/UserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/service/UserService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/service/impl/UserServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/love233niang-seckill-user/target/classes/com/love233niang/seckill/user/service/impl/UserServiceImpl.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +78,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.SeckillApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "dev",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "E:/JAVA_IDE_WORK/JavaWork_Space/seckill/love233niang-seckill",
     "nodejs_package_manager_path": "npm",
@@ -162,11 +160,22 @@
       <workItem from="1784956991560" duration="4015000" />
       <workItem from="1784967432662" duration="1255000" />
       <workItem from="1785113178084" duration="30000" />
-      <workItem from="1785120275061" duration="2004000" />
+      <workItem from="1785120275061" duration="3890000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

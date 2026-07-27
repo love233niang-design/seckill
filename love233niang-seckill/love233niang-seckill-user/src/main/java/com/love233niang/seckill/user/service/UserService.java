@@ -2,6 +2,8 @@ package com.love233niang.seckill.user.service;
 
 
 import com.love233niang.seckill.common.utils.Response;
+import com.love233niang.seckill.user.model.vo.LoginUserReqVO;
+import com.love233niang.seckill.user.model.vo.LoginUserRspVO;
 import com.love233niang.seckill.user.model.vo.RegisterUserReqVO;
 
 /**
@@ -18,5 +20,12 @@ public interface UserService {
      * @return
      */
     Response<?> register(RegisterUserReqVO registerUserReqVO);
+
+    /**
+     * 用户登录
+     * @param loginUserReqVO
+     * @return
+     */
+    Response<LoginUserRspVO> login(LoginUserReqVO loginUserReqVO);
 }
 
