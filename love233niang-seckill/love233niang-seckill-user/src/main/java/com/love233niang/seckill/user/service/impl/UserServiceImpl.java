@@ -73,6 +73,12 @@ public class UserServiceImpl implements UserService {
         checkAndDeleteVerifyCodeScript.setResultType(Long.class);
     }
 
+    /**
+     * 用户注册
+     *
+     * @param registerUserReqVO
+     * @return
+     */
     @Override
     public Response<?> register(RegisterUserReqVO registerUserReqVO) {
         String mobile = registerUserReqVO.getMobile();
