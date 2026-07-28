@@ -64,23 +64,38 @@ public class UserServiceImpl implements UserService {
     private static final Integer LOGIN_FAIL_MAX_COUNT = 5;
     // 账号临时锁定时间（分钟）
     private static final Long LOGIN_LOCK_MINUTES = 30L;
+    // BCrypt 密码编码器
+    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+
 
 
     /**
      * 验证码校验 Lua 脚本
      */
     private final DefaultRedisScript<Long> checkAndDeleteVerifyCodeScript;
+    /**
+     * 登录失败计数 Lua 脚本
+     */
+    private final DefaultRedisScript<Long> checkAndIncrementLoginFailScript;
+
 
     /**
      * 构造函数：初始化 Lua 脚本
      */
     public UserServiceImpl() {
+        // 1. 验证码校验 Lua 脚本
         checkAndDeleteVerifyCodeScript = new DefaultRedisScript<>();
         // 从 classpath 的 lua 目录下加载 Lua 脚本文件
         checkAndDeleteVerifyCodeScript.setLocation(new ClassPathResource("lua/check_and_delete_verify_code.lua"));
         // 指定脚本返回值类型
         checkAndDeleteVerifyCodeScript.setResultType(Long.class);
+
+        // 2. 登录失败计数 Lua 脚本
+        checkAndIncrementLoginFailScript = new DefaultRedisScript<>();
+        checkAndIncrementLoginFailScript.setLocation(new ClassPathResource("lua/check_and_increment_login_fail_count.lua"));
+        checkAndIncrementLoginFailScript.setResultType(Long.class);
     }
+
 
     /**
      * 用户注册
@@ -104,8 +119,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 密码加密 ByCrypt 算法
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String encodedPassword = passwordEncoder.encode(password);
+        String encodedPassword = PASSWORD_ENCODER.encode(password);
 
         // 构建用户实体，插入数据库
         UserDO userDO = UserDO.builder()
@@ -274,9 +288,8 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
         }
 
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         // 使用 BCrypt 校验明文密码和密文密码是否匹配
-        boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
+        boolean matches = PASSWORD_ENCODER.matches(rawPassword, encodedPassword);
         if (!matches) {
             addLoginFailCount(mobile);
             throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
@@ -353,12 +366,15 @@ public class UserServiceImpl implements UserService {
         // 构建 Redis Key
         String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
 
-        // 累加登录失败次数
-        Long failCount = redisTemplate.opsForValue().increment(failCountKey);
+        // 执行 Lua 脚本：原子性地检查失败次数并累加（超限返回 -1; 未超限返回累加后的值）
+        Long result = redisTemplate.execute(checkAndIncrementLoginFailScript,
+                Collections.singletonList(failCountKey),
+                String.valueOf(LOGIN_FAIL_MAX_COUNT),
+                String.valueOf(LOGIN_LOCK_MINUTES * 60));
 
-        // 如果是第一次添加缓存，需要设置过期时间
-        if (Objects.nonNull(failCount) && failCount == 5) {
-            redisTemplate.expire(failCountKey, LOGIN_LOCK_MINUTES, TimeUnit.MINUTES);
+        // 失败次数已达上限，直接拒绝
+        if (Objects.nonNull(result) && result == -1) {
+            throw new BizException(ResponseCodeEnum.LOGIN_FAIL_TOO_MANY);
         }
     }
 }
