@@ -19,14 +19,17 @@ import com.love233niang.seckill.user.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.Executor;
@@ -50,6 +53,24 @@ public class UserServiceImpl implements UserService {
     private static final Long VERIFY_CODE_EXPIRE_MINUTES = 5L;
     // 发送频率限制时间（秒）
     private static final Long VERIFY_CODE_LIMIT_SECONDS = 60L;
+    // Redis 中每日发送次数限制的 Key 前缀
+    private static final String VERIFY_CODE_DAILY_LIMIT_KEY_PREFIX = "verify_code_daily:";
+    // 每日发送次数上限
+    private static final Integer VERIFY_CODE_DAILY_LIMIT = 10;
+
+    // 验证码校验 Lua 脚本
+    private final DefaultRedisScript<Long> checkAndDeleteVerifyCodeScript;
+
+    /**
+     * 构造函数：初始化 Lua 脚本
+     */
+    public UserServiceImpl() {
+        checkAndDeleteVerifyCodeScript = new DefaultRedisScript<>();
+        // 从 classpath 的 lua 目录下加载 Lua 脚本文件
+        checkAndDeleteVerifyCodeScript.setLocation(new ClassPathResource("lua/check_and_delete_verify_code.lua"));
+        // 指定脚本返回值类型
+        checkAndDeleteVerifyCodeScript.setResultType(Long.class);
+    }
 
     @Override
     public Response<?> register(RegisterUserReqVO registerUserReqVO) {
@@ -158,7 +179,7 @@ public class UserServiceImpl implements UserService {
 
         // 发送频率限制：检查是否在 60 秒内重复发送
         String limitKey = VERIFY_CODE_LIMIT_KEY_PREFIX + verifyCodeType.getPurpose() + ":" + mobile;
-        System.out.println(limitKey);
+
         if (redisTemplate.hasKey(limitKey)) {
             throw new BizException(ResponseCodeEnum.VERIFY_CODE_SEND_TOO_FREQUENT);
         }
@@ -230,17 +251,21 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResponseCodeEnum.USER_VERIFY_CODE_ERROR);
         }
 
-        // 从 Redis 中获取对应的手机号，对应的场景的验证码
+        // 构建 Redis Key
         String redisKey = VERIFY_CODE_KEY_PREFIX + purpose + ":" + mobile;
-        Object storedCode = redisTemplate.opsForValue().get(redisKey);
 
-        // 对比验证码是否正确
-        if (Objects.isNull(storedCode) || !verifyCode.equals(storedCode.toString())) {
+        // 执行 Lua 脚本：原子性地比对验证码并删除（匹配返回 1; 不匹配或 Key 不存在返回 0）
+        Long result = redisTemplate.execute(
+                checkAndDeleteVerifyCodeScript, // Lua 脚本对象
+                Collections.singletonList(redisKey), // Redis key 列表
+                verifyCode); // 可变参数
+
+        // 验证码错误或已过期
+        if (result == null || result == 0) {
             throw new BizException(ResponseCodeEnum.USER_VERIFY_CODE_ERROR);
         }
 
-        // 验证通过后删除 Redis 中的验证码
-        redisTemplate.delete(redisKey);
+        // 能走到这里，说明 result == 1， 验证码比对成功，并且验证码已被删除
 
     }
 
