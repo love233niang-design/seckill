@@ -58,8 +58,17 @@ public class UserServiceImpl implements UserService {
     private static final String VERIFY_CODE_DAILY_LIMIT_KEY_PREFIX = "verify_code_daily:";
     // 每日发送次数上限
     private static final Integer VERIFY_CODE_DAILY_LIMIT = 10;
+    // Redis 中登录失败次数的 Key 前缀
+    private static final String LOGIN_FAIL_COUNT_KEY_PREFIX = "login_fail_count:";
+    // 登录失败次数上限（超过此值则临时锁定账号）
+    private static final Integer LOGIN_FAIL_MAX_COUNT = 5;
+    // 账号临时锁定时间（分钟）
+    private static final Long LOGIN_LOCK_MINUTES = 30L;
 
-    // 验证码校验 Lua 脚本
+
+    /**
+     * 验证码校验 Lua 脚本
+     */
     private final DefaultRedisScript<Long> checkAndDeleteVerifyCodeScript;
 
     /**
@@ -131,25 +140,27 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResponseCodeEnum.USER_MOBILE_NOT_REGISTERED);
         }
 
-
-        // 3. 根据登录类型，进行身份验证
-        if (Objects.equals(type, LoginTypeEnum.PASSWORD.getCode())) {
-            // 密码登录：校验密码是否正确
-            checkPassword(loginUserReqVO.getPassword(), userDO.getPassword());
-        } else {
-            // 验证码登录：校验验证码是否正确
-            checkVerifyCode(loginUserReqVO.getVerifyCode(), mobile, VerifyCodeTypeEnum.LOGIN.getPurpose());
-        }
-
-        // 校验用户状态（是否被禁用）
+        // 校验用户状态（是否被禁用， 放在身份验证之前，避免被禁用账号还执行耗时的密码校验）
         if (Objects.equals(userDO.getStatus(), UserStatusEnum.DISABLED.getCode())) {
             throw new BizException(ResponseCodeEnum.USER_STATUS_DISABLED);
         }
 
-        // 调用 SaToken 执行登录
+        // 根据登录类型，进行身份验证
+        if (Objects.equals(type, LoginTypeEnum.PASSWORD.getCode())) {
+            // 检查登录失败次数
+            checkLoginFailLimit(mobile);
+
+            // 密码登录：校验密码是否正确
+            checkPassword(loginUserReqVO.getPassword(), userDO.getPassword(), mobile);
+        } else {
+            // 验证码登录：校验验证码
+            checkVerifyCode(loginUserReqVO.getVerifyCode(), mobile, VerifyCodeTypeEnum.LOGIN.getPurpose());
+        }
+
+        // 调用 SaToken 执行登录，传入 用户 ID
         StpUtil.login(userDO.getId());
 
-        // 获取 SaToken 生成的 Token
+        // 获取 SaToken 登录的 token
         String token = StpUtil.getTokenValue();
 
         // 构建反参对象
@@ -254,10 +265,12 @@ public class UserServiceImpl implements UserService {
      *
      * @param rawPassword     明文密码
      * @param encodedPassword 加密后的密码
+     * @param mobile          手机号（用于构建 Redis Key）
      */
-    private void checkPassword(String rawPassword, String encodedPassword) {
+    private void checkPassword(String rawPassword, String encodedPassword, String mobile) {
         // 密码不能为空
         if (StrUtil.isBlank(rawPassword)) {
+            addLoginFailCount(mobile);
             throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
         }
 
@@ -265,8 +278,13 @@ public class UserServiceImpl implements UserService {
         // 使用 BCrypt 校验明文密码和密文密码是否匹配
         boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
         if (!matches) {
+            addLoginFailCount(mobile);
             throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
         }
+
+        // 密码校验成功，清除登录失败次数
+        String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
+        redisTemplate.delete(failCountKey);
     }
 
     /**
@@ -306,5 +324,41 @@ public class UserServiceImpl implements UserService {
      */
     private String generateNickname() {
         return "用户" + RandomUtil.randomNumbers(6);
+    }
+
+    /**
+     * 检查登录失败次数是否超限
+     *
+     * @param mobile 手机号
+     */
+    private void checkLoginFailLimit(String mobile) {
+        // 构建 Redis Key
+        String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
+
+        // 查询 Redis 缓存中的计数
+        Integer failCount = (Integer) redisTemplate.opsForValue().get(failCountKey);
+
+        // 判断登录失败次数是否超过上限
+        if (Objects.nonNull(failCount) && failCount >= LOGIN_FAIL_MAX_COUNT) {
+            throw new BizException(ResponseCodeEnum.LOGIN_FAIL_TOO_MANY);
+        }
+    }
+
+    /**
+     * 累加登录失败次数
+     *
+     * @param mobile 手机号
+     */
+    private void addLoginFailCount(String mobile) {
+        // 构建 Redis Key
+        String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
+
+        // 累加登录失败次数
+        Long failCount = redisTemplate.opsForValue().increment(failCountKey);
+
+        // 如果是第一次添加缓存，需要设置过期时间
+        if (Objects.nonNull(failCount) && failCount == 5) {
+            redisTemplate.expire(failCountKey, LOGIN_LOCK_MINUTES, TimeUnit.MINUTES);
+        }
     }
 }
