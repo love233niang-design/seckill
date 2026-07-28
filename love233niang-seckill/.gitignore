@@ -1,2 +1,9 @@
 .idea/
 logs/
+
+# 忽略所有 profile 特定的 yml 文件（如 application-dev.yml, application-test.yml）
+**/application-*.yml
+**/application-*.yaml
+
+# 如果你只想忽略 dev 环境，可以写死
+# **/application-dev.yml
