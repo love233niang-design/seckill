@@ -20,18 +20,19 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -184,6 +185,28 @@ public class UserServiceImpl implements UserService {
             throw new BizException(ResponseCodeEnum.VERIFY_CODE_SEND_TOO_FREQUENT);
         }
 
+        // 每日发送次数限制：同一手机号、同一场景，每天最多发送10 条
+        String dailyLimitKey = VERIFY_CODE_DAILY_LIMIT_KEY_PREFIX + verifyCodeType.getPurpose()
+                + ":" + mobile + ":" + LocalDate.now();
+
+        // 发送次数 +1
+        Long dailyCount = redisTemplate.opsForValue().increment(dailyLimitKey);
+
+        // 首次设置缓存时，计算当天结束的剩余秒数，作为 key 的 ttl 过期时间
+        if (Objects.nonNull(dailyCount) && dailyCount == 1) {
+            // 计算当前时间。到第二天凌晨之间还剩下多少秒
+            long secondsUntilMidnight = Duration.between(
+                    LocalDateTime.now(),
+                    LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.MIDNIGHT)
+            ).getSeconds();
+            // 设置过期时间
+            redisTemplate.expire(dailyLimitKey, secondsUntilMidnight, TimeUnit.SECONDS);
+        }
+
+        // 如果已经超过十条， 抛出异常
+        if (Objects.nonNull(dailyCount) && dailyCount > VERIFY_CODE_DAILY_LIMIT) {
+            throw new BizException(ResponseCodeEnum.VERIFY_CODE_DAILY_LIMIT_EXCEEDED);
+        }
         // 生成 6 位随机数字验证码
         String verifyCode = RandomUtil.randomNumbers(6);
 
