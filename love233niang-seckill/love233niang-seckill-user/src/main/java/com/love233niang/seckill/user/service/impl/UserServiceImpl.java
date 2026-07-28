@@ -58,10 +58,7 @@ public class UserServiceImpl implements UserService {
         String verifyCode = registerUserReqVO.getVerifyCode();
 
         // 校验验证码
-        // todo 先写死验证码，后续开发发送接口
-        if (!"123456".equals(verifyCode)) {
-            throw new BizException(ResponseCodeEnum.USER_VERIFY_CODE_ERROR);
-        }
+        checkVerifyCode(verifyCode, mobile, VerifyCodeTypeEnum.REGISTER.getPurpose());
 
         // 校验手机号是否已经注册
         Long existUserId = userDOMapper.selectIdByMobile(mobile);
@@ -113,7 +110,7 @@ public class UserServiceImpl implements UserService {
             checkPassword(loginUserReqVO.getPassword(), userDO.getPassword());
         } else {
             // 验证码登录：校验验证码是否正确
-            checkVerifyCode(loginUserReqVO.getVerifyCode());
+            checkVerifyCode(loginUserReqVO.getVerifyCode(), mobile, VerifyCodeTypeEnum.LOGIN.getPurpose());
         }
 
         // 校验用户状态（是否被禁用）
@@ -161,6 +158,7 @@ public class UserServiceImpl implements UserService {
 
         // 发送频率限制：检查是否在 60 秒内重复发送
         String limitKey = VERIFY_CODE_LIMIT_KEY_PREFIX + verifyCodeType.getPurpose() + ":" + mobile;
+        System.out.println(limitKey);
         if (redisTemplate.hasKey(limitKey)) {
             throw new BizException(ResponseCodeEnum.VERIFY_CODE_SEND_TOO_FREQUENT);
         }
@@ -226,16 +224,24 @@ public class UserServiceImpl implements UserService {
      *
      * @param verifyCode 验证码
      */
-    private void checkVerifyCode(String verifyCode) {
+    private void checkVerifyCode(String verifyCode, String mobile, String purpose) {
         // 验证码不能为空
         if (StrUtil.isBlank(verifyCode)) {
             throw new BizException(ResponseCodeEnum.USER_VERIFY_CODE_ERROR);
         }
 
-        // TODO: 验证码先写死 123456，后续开发验证码发送接口，再重构这里
-        if (!"123456".equals(verifyCode)) {
+        // 从 Redis 中获取对应的手机号，对应的场景的验证码
+        String redisKey = VERIFY_CODE_KEY_PREFIX + purpose + ":" + mobile;
+        Object storedCode = redisTemplate.opsForValue().get(redisKey);
+
+        // 对比验证码是否正确
+        if (Objects.isNull(storedCode) || !verifyCode.equals(storedCode.toString())) {
             throw new BizException(ResponseCodeEnum.USER_VERIFY_CODE_ERROR);
         }
+
+        // 验证通过后删除 Redis 中的验证码
+        redisTemplate.delete(redisKey);
+
     }
 
     /**
