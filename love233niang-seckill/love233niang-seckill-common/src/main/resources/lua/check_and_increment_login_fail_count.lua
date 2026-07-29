@@ -8,15 +8,14 @@
 
 local currentCount = tonumber(redis.call('GET', KEYS[1]) or '0')
 
--- 如果失败次数已达上限，直接返回 -1，不累加
 if currentCount >= tonumber(ARGV[1]) then
+    -- 已达上限：刷新过期时间，重新计时 30 分钟（锁满 30 分钟）
+    redis.call('EXPIRE', KEYS[1], ARGV[2])
     return -1
 end
 
--- 累加失败次数
 local newCount = redis.call('INCR', KEYS[1])
 
--- 首次失败时，设置过期时间（锁定窗口）
 if newCount == 1 then
     redis.call('EXPIRE', KEYS[1], ARGV[2])
 end

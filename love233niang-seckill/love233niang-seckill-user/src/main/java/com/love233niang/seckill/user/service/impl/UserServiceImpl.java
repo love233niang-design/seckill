@@ -68,7 +68,6 @@ public class UserServiceImpl implements UserService {
     private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
 
-
     /**
      * 验证码校验 Lua 脚本
      */
