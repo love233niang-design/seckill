@@ -257,6 +257,26 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 登出
+     *
+     * @return
+     */
+    @Override
+    public Response<?> logout() {
+        // 获取当前请求中的 Token 值
+        String tokenValue = StpUtil.getTokenValue();
+        // 获取当前登录用户的 ID
+        Object userId = StpUtil.getLoginId();
+
+        // 调用 SaToken 的退出方法
+        StpUtil.logout();
+
+        log.info("==> 用户退出登录, userId: {}, token: {}", userId, tokenValue);
+
+        return Response.success();
+    }
+
+    /**
      * 发送短信验证码（异步执行，由线程池调度）
      *
      * @param mobile     手机号
