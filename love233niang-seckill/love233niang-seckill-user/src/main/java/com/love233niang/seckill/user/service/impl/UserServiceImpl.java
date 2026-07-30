@@ -19,10 +19,12 @@ import com.love233niang.seckill.user.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,8 +43,13 @@ import java.util.concurrent.TimeUnit;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDOMapper userDOMapper;
+
+//    @Resource
+//    private RedisTemplate<String, Object> stringRedisTemplate;
+
     @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
+
     @Resource(name = "bizExecutor")
     private Executor bizExecutor;
 
@@ -69,6 +76,11 @@ public class UserServiceImpl implements UserService {
 
 
     /**
+     * 每日发送次数限制 Lua 脚本
+     */
+    private final DefaultRedisScript<Long> checkAndIncrementDailyLimitScript;
+
+    /**
      * 验证码校验 Lua 脚本
      */
     private final DefaultRedisScript<Long> checkAndDeleteVerifyCodeScript;
@@ -93,6 +105,11 @@ public class UserServiceImpl implements UserService {
         checkAndIncrementLoginFailScript = new DefaultRedisScript<>();
         checkAndIncrementLoginFailScript.setLocation(new ClassPathResource("lua/check_and_increment_login_fail_count.lua"));
         checkAndIncrementLoginFailScript.setResultType(Long.class);
+
+        // 3. 每日发送次数限制 Lua 脚本
+        checkAndIncrementDailyLimitScript = new DefaultRedisScript<>();
+        checkAndIncrementDailyLimitScript.setLocation(new ClassPathResource("lua/check_and_increment_verify_code_daily_limit.lua"));
+        checkAndIncrementDailyLimitScript.setResultType(Long.class);
     }
 
 
@@ -150,6 +167,9 @@ public class UserServiceImpl implements UserService {
 
         // 判断用户是否存在
         if (Objects.isNull(userDO)) {
+            if (Objects.equals(type, LoginTypeEnum.PASSWORD.getCode())) {
+                throw new BizException(ResponseCodeEnum.USER_LOGIN_CREDENTIAL_ERROR);
+            }
             throw new BizException(ResponseCodeEnum.USER_MOBILE_NOT_REGISTERED);
         }
 
@@ -162,7 +182,6 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(type, LoginTypeEnum.PASSWORD.getCode())) {
             // 检查登录失败次数
             checkLoginFailLimit(mobile);
-
             // 密码登录：校验密码是否正确
             checkPassword(loginUserReqVO.getPassword(), userDO.getPassword(), mobile);
         } else {
@@ -211,7 +230,8 @@ public class UserServiceImpl implements UserService {
         // 发送频率限制：检查是否在 60 秒内重复发送
         String limitKey = VERIFY_CODE_LIMIT_KEY_PREFIX + verifyCodeType.getPurpose() + ":" + mobile;
 
-        if (redisTemplate.hasKey(limitKey)) {
+        Boolean absent = stringRedisTemplate.opsForValue().setIfAbsent(limitKey, "1", VERIFY_CODE_LIMIT_SECONDS, TimeUnit.SECONDS);
+        if (Boolean.FALSE.equals(absent)) {
             throw new BizException(ResponseCodeEnum.VERIFY_CODE_SEND_TOO_FREQUENT);
         }
 
@@ -219,39 +239,28 @@ public class UserServiceImpl implements UserService {
         String dailyLimitKey = VERIFY_CODE_DAILY_LIMIT_KEY_PREFIX + verifyCodeType.getPurpose()
                 + ":" + mobile + ":" + LocalDate.now();
 
-        // 发送次数 +1
-        Long dailyCount = redisTemplate.opsForValue().increment(dailyLimitKey);
+        long secondsUntilMidnight = Duration.between(
+                LocalDateTime.now(),
+                LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.MIDNIGHT)
+        ).getSeconds();
 
-        // 首次设置缓存时，计算当天结束的剩余秒数，作为 key 的 ttl 过期时间
-        if (Objects.nonNull(dailyCount) && dailyCount == 1) {
-            // 计算当前时间。到第二天凌晨之间还剩下多少秒
-            long secondsUntilMidnight = Duration.between(
-                    LocalDateTime.now(),
-                    LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.MIDNIGHT)
-            ).getSeconds();
-            // 设置过期时间
-            redisTemplate.expire(dailyLimitKey, secondsUntilMidnight, TimeUnit.SECONDS);
-        }
+        // 执行 lua 脚本，原子性的进行每日发送次数的累加
+        Long dailyCount = stringRedisTemplate.execute(checkAndIncrementDailyLimitScript,
+                Collections.singletonList(dailyLimitKey),
+                String.valueOf(VERIFY_CODE_DAILY_LIMIT),
+                String.valueOf(secondsUntilMidnight));
+
 
         // 如果已经超过十条， 抛出异常
-        if (Objects.nonNull(dailyCount) && dailyCount > VERIFY_CODE_DAILY_LIMIT) {
+        if (Objects.nonNull(dailyCount) && dailyCount == -1) {
             throw new BizException(ResponseCodeEnum.VERIFY_CODE_DAILY_LIMIT_EXCEEDED);
         }
         // 生成 6 位随机数字验证码
         String verifyCode = RandomUtil.randomNumbers(6);
 
-        // 通过 Pipeline 通道，批量写入 Redis（频率限制 Key + 验证码），减少网络往返，降低部分失败的风险
         String redisKey = VERIFY_CODE_KEY_PREFIX + verifyCodeType.getPurpose() + ":" + mobile;
-        redisTemplate.executePipelined(new SessionCallback<Void>() {
-            @Override
-            public Void execute(RedisOperations operations) {
-                // 先写频率限制 Key（60 秒 TTL）
-                operations.opsForValue().set(limitKey, "1", VERIFY_CODE_LIMIT_SECONDS, TimeUnit.SECONDS);
-                // 再写验证码 Key（5 分钟 TTL）
-                operations.opsForValue().set(redisKey, verifyCode, VERIFY_CODE_EXPIRE_MINUTES, TimeUnit.MINUTES);
-                return null;
-            }
-        });
+        stringRedisTemplate.opsForValue().set(redisKey, verifyCode, VERIFY_CODE_EXPIRE_MINUTES, TimeUnit.MINUTES);
+
         bizExecutor.execute(() -> sendSms(mobile, verifyCode));
         return Response.success();
     }
@@ -304,19 +313,19 @@ public class UserServiceImpl implements UserService {
         // 密码不能为空
         if (StrUtil.isBlank(rawPassword)) {
             addLoginFailCount(mobile);
-            throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
+            throw new BizException(ResponseCodeEnum.USER_LOGIN_CREDENTIAL_ERROR);
         }
 
         // 使用 BCrypt 校验明文密码和密文密码是否匹配
         boolean matches = PASSWORD_ENCODER.matches(rawPassword, encodedPassword);
         if (!matches) {
             addLoginFailCount(mobile);
-            throw new BizException(ResponseCodeEnum.USER_PASSWORD_ERROR);
+            throw new BizException(ResponseCodeEnum.USER_LOGIN_CREDENTIAL_ERROR);
         }
 
         // 密码校验成功，清除登录失败次数
         String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
-        redisTemplate.delete(failCountKey);
+        stringRedisTemplate.delete(failCountKey);
     }
 
     /**
@@ -334,7 +343,7 @@ public class UserServiceImpl implements UserService {
         String redisKey = VERIFY_CODE_KEY_PREFIX + purpose + ":" + mobile;
 
         // 执行 Lua 脚本：原子性地比对验证码并删除（匹配返回 1; 不匹配或 Key 不存在返回 0）
-        Long result = redisTemplate.execute(
+        Long result = stringRedisTemplate.execute(
                 checkAndDeleteVerifyCodeScript, // Lua 脚本对象
                 Collections.singletonList(redisKey), // Redis key 列表
                 verifyCode); // 可变参数
@@ -368,11 +377,14 @@ public class UserServiceImpl implements UserService {
         String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
 
         // 查询 Redis 缓存中的计数
-        Integer failCount = (Integer) redisTemplate.opsForValue().get(failCountKey);
+        String failCountStr = stringRedisTemplate.opsForValue().get(failCountKey);
 
         // 判断登录失败次数是否超过上限
-        if (Objects.nonNull(failCount) && failCount >= LOGIN_FAIL_MAX_COUNT) {
-            throw new BizException(ResponseCodeEnum.LOGIN_FAIL_TOO_MANY);
+        if (StrUtil.isNotBlank(failCountStr)) {
+            int failCount = Integer.parseInt(failCountStr);
+            if (failCount >= LOGIN_FAIL_MAX_COUNT) {
+                throw new BizException(ResponseCodeEnum.LOGIN_FAIL_TOO_MANY);
+            }
         }
     }
 
@@ -386,7 +398,7 @@ public class UserServiceImpl implements UserService {
         String failCountKey = LOGIN_FAIL_COUNT_KEY_PREFIX + mobile;
 
         // 执行 Lua 脚本：原子性地检查失败次数并累加（超限返回 -1; 未超限返回累加后的值）
-        Long result = redisTemplate.execute(checkAndIncrementLoginFailScript,
+        Long result = stringRedisTemplate.execute(checkAndIncrementLoginFailScript,
                 Collections.singletonList(failCountKey),
                 String.valueOf(LOGIN_FAIL_MAX_COUNT),
                 String.valueOf(LOGIN_LOCK_MINUTES * 60));
