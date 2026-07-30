@@ -33,6 +33,8 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     LOGIN_FAIL_TOO_MANY("20009", "密码错误次数过多，请 30 分钟后再试"),
     UNAUTHORIZED("20010", "未登录，请先登录"),
     USER_LOGIN_CREDENTIAL_ERROR("20011", "手机号或密码错误"),
+    // ----------- 秒杀商品模块异常状态码 -----------
+    SECKILL_ACTIVITY_NOT_EXIST("30001", "秒杀活动不存在"),
 
 
     ;
