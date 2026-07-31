@@ -1,6 +1,8 @@
 package com.love233niang.seckill.goods.service;
 
 import com.love233niang.seckill.common.utils.Response;
+import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailReqVO;
+import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailRspVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListReqVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListRspVO;
 
@@ -21,5 +23,13 @@ public interface GoodsService {
      * @return
      */
     Response<List<FindSeckillGoodsListRspVO>> findSeckillGoodsList(FindSeckillGoodsListReqVO reqVO);
+
+    /**
+     * 查询秒杀商品详情
+     *
+     * @param reqVO
+     * @return
+     */
+    Response<FindSeckillGoodsDetailRspVO> findSeckillGoodsDetail(FindSeckillGoodsDetailReqVO reqVO);
 }
 

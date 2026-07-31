@@ -2,6 +2,8 @@ package com.love233niang.seckill.goods.controller;
 
 import com.love233niang.seckill.common.aspect.ApiOperationLog;
 import com.love233niang.seckill.common.utils.Response;
+import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailReqVO;
+import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailRspVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListReqVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListRspVO;
 import com.love233niang.seckill.goods.service.GoodsService;
@@ -39,6 +41,18 @@ public class GoodsController {
     @ApiOperationLog(description = "查询秒杀商品列表")
     public Response<List<FindSeckillGoodsListRspVO>> getSeckillGoodsList(@RequestBody @Validated FindSeckillGoodsListReqVO reqVO) {
         return goodsService.findSeckillGoodsList(reqVO);
+    }
+
+    /**
+     * 查询秒杀商品详情
+     *
+     * @param reqVO
+     * @return
+     */
+    @PostMapping("/detail")
+    @ApiOperationLog(description = "查询秒杀商品详情")
+    public Response<FindSeckillGoodsDetailRspVO> getSeckillGoodsDetail(@RequestBody @Validated FindSeckillGoodsDetailReqVO reqVO) {
+        return goodsService.findSeckillGoodsDetail(reqVO);
     }
 }
 

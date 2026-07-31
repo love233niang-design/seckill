@@ -26,4 +26,7 @@ public interface SeckillGoodsDOMapper {
      */
     List<SeckillGoodsDO> selectByActivityId(@Param("activityId") Long activityId);
 
+    SeckillGoodsDO selectByActivityIdAndGoodsId(@Param("activityId") Long activityId,
+                                                @Param("goodsId") Long goodsId);
+
 }

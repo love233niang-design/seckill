@@ -16,4 +16,9 @@ public interface GoodsDetailDOMapper {
     int updateByPrimaryKeyWithBLOBs(GoodsDetailDO record);
 
     int updateByPrimaryKey(GoodsDetailDO record);
+
+    /**
+     * 根据商品 ID 查询商品详情
+     */
+    GoodsDetailDO selectByGoodsId(Long goodsId);
 }
