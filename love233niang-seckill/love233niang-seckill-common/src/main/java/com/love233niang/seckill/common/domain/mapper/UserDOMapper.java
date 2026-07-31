@@ -1,6 +1,9 @@
 package com.love233niang.seckill.common.domain.mapper;
 
 import com.love233niang.seckill.common.domain.dataobject.UserDO;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface UserDOMapper {
     int deleteByPrimaryKey(Long id);
@@ -30,4 +33,13 @@ public interface UserDOMapper {
      * @return
      */
     UserDO selectByMobile(String mobile);
+
+    /**
+     * 根据昵称前缀查询用户列表
+     *
+     * @param prefix
+     * @return
+     */
+    List<UserDO> selectByNicknamePrefix(@Param("prefix") String prefix);
+
 }
