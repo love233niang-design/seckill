@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/4/30 20:39
  * @Version: v1.0.0
  * @Description: 商品模块

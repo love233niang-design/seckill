@@ -58,8 +58,9 @@ public class GoodsServiceImpl implements GoodsService {
             return Response.success(Collections.emptyList());
         }
         List<Long> goodsId = seckillGoodsDOS.stream().map(SeckillGoodsDO::getGoodsId).collect(Collectors.toList());
+        // 优化点：使用 selectByIds 批量查询商品信息，构建 map 集合
+        // 避免了在循环中一次次查询商品信息
         List<GoodsDO> goodsDOS = goodsDOMapper.selectByIds(goodsId);
-
         Map<Long, GoodsDO> goodsMap = goodsDOS.stream().collect(Collectors.toMap(GoodsDO::getId, goodsDO -> goodsDO));
 
         // 4. 计算活动状态（基于当前时间动态判断）

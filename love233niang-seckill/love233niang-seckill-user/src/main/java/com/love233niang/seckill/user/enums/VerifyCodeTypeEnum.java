@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/4/14 17:23
  * @Version: v1.0.0
  * @Description: 验证码类型枚举

@@ -3,7 +3,7 @@ package com.love233niang.seckill.common.constant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/4/30 21:20
  * @Version: v1.0.0
  * @Description: 日期常量

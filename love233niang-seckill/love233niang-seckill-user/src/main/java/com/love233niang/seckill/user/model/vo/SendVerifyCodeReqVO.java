@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/4/14 16:55
  * @Version: v1.0.0
  * @Description: 发送验证码

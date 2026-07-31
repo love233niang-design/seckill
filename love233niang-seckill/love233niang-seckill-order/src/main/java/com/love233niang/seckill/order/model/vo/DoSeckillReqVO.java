@@ -1,4 +1,4 @@
-package com.love233niang.seckill.goods.model.vo;
+package com.love233niang.seckill.order.model.vo;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -9,21 +9,28 @@ import lombok.NoArgsConstructor;
 
 /**
  * @Author: hq
- * @Date: 2026/4/30 20:03
+ * @Date: 2026/5/8 18:31
  * @Version: v1.0.0
- * @Description: 查询秒杀商品列表入参
+ * @Description: 秒杀下单入参
  **/
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FindSeckillGoodsListReqVO {
+public class DoSeckillReqVO {
 
+    /**
+     * 活动 ID
+     */
     @NotNull(message = "活动 ID 不能为空")
-    @Positive(message = "活动 ID 不合法") // 必须为正整数
+    @Positive(message = "活动 ID 不合法")
     private Long activityId;
 
-
-
+    /**
+     * 商品 ID
+     */
+    @NotNull(message = "商品 ID 不能为空")
+    @Positive(message = "商品 ID 不合法")
+    private Long goodsId;
 }
 
