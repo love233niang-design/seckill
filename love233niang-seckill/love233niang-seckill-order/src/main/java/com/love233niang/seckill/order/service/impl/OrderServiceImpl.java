@@ -15,12 +15,14 @@ import com.love233niang.seckill.order.enums.OrderStatusEnum;
 import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
 import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
 import com.love233niang.seckill.order.service.OrderService;
+import com.love233niang.seckill.order.utils.OrderLockUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -36,6 +38,10 @@ public class OrderServiceImpl implements OrderService {
     private SeckillOrderDOMapper seckillOrderDOMapper;
     @Autowired
     private GoodsDOMapper goodsDOMapper;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    @Autowired
+    private OrderLockUtils orderLockUtils;
 
     /**
      * 秒杀下单
@@ -44,71 +50,109 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO) {
+        // 活动 ID
         Long activityId = reqVO.getActivityId();
+        // 商品 ID
         Long goodsId = reqVO.getGoodsId();
 
         // 1. 获取当前登录用户 ID
         long userId = StpUtil.getLoginIdAsLong();
         log.info("==> 当前登录用户 ID: {}", userId);
 
-        // 2。查询活动是否存在
+        // 应用层锁：防止同一用户并发重复下单
+        // 构建锁 Key "userId:activityId:goodsId"
+        String lockKey = userId + ":" + activityId + ":" + goodsId;
+
+        // 尝试获取锁，获取失败，则说明该用户对该商品已经有请求在处理中
+        if (!orderLockUtils.tryLock(lockKey)) {
+            log.warn("==> 应用层锁拦截重复下单, userId: {}, activityId: {}, goodsId: {}", userId, activityId, goodsId);
+            throw new BizException(ResponseCodeEnum.SECKILL_ORDER_PROCESSING);
+        }
+
+        try {
+            return processSeckill(activityId, goodsId, userId);
+        } finally {
+            // 无论成功还是异常，都要释放锁
+            orderLockUtils.unlock(lockKey);
+        }
+    }
+
+    /**
+     * 秒杀下单核心逻辑
+     */
+    private Response<DoSeckillRspVO> processSeckill(Long activityId, Long goodsId, long userId) {
+        // 2. 校验活动是否存在
         SeckillActivityDO activityDO = seckillActivityDOMapper.selectByPrimaryKey(activityId);
         if (Objects.isNull(activityDO)) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
         }
-        // 3.活动时间校验
+
+        // 3. 校验秒杀活动时间
         LocalDateTime now = LocalDateTime.now();
+        // 活动是否还没开始
         if (now.isBefore(activityDO.getBeginTime())) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_STARTED);
         }
+
+        // 活动已经结束
         if (now.isAfter(activityDO.getEndTime())) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_ENDED);
         }
-        // 4秒杀商品校验
+
+        // 4. 根据活动 ID 和商品 ID 查询秒杀商品，校验此活动下商品是否存在
         SeckillGoodsDO seckillGoodsDO = seckillGoodsDOMapper.selectByActivityIdAndGoodsId(activityId, goodsId);
         if (Objects.isNull(seckillGoodsDO)) {
             throw new BizException(ResponseCodeEnum.SECKILL_GOODS_NOT_EXIST);
         }
 
-        // 5. 秒杀商品库存校验
-        Integer seckillStock = seckillGoodsDO.getSeckillStock();
-        if (seckillStock <= 0) {
+        // 5. 库存校验，库存必须大于0
+        if (seckillGoodsDO.getSeckillStock() <= 0) {
             throw new BizException(ResponseCodeEnum.SECKILL_GOODS_SOLD_OUT);
         }
-        // 6. 扣减库存
-        int count = seckillGoodsDOMapper.deductStock(seckillGoodsDO.getId());
-        if (count == 0) {
-            throw new BizException(ResponseCodeEnum.SECKILL_GOODS_SOLD_OUT);
-        }
-        //7查询商品信息
+
+        // 6. 查询商品信息，用于冗余到订单中
         GoodsDO goodsDO = goodsDOMapper.selectByPrimaryKey(goodsId);
-        // 创建订单
         // 使用 Hutool 提供的工具方法，通过雪花算法生成订单号
         String orderNo = IdUtil.getSnowflakeNextIdStr();
         // 订单过期时间：当前时间 + 30 分钟
         LocalDateTime expireTime = now.plusMinutes(30);
-        SeckillOrderDO orderDO = SeckillOrderDO.builder()
-                .userId(userId)
-                .activityId(activityId)
-                .goodsId(goodsId)
-                .orderNo(orderNo)
-                .seckillPrice(seckillGoodsDO.getSeckillPrice())
-                .goodsName(goodsDO.getGoodsName())
-                .goodsImg(goodsDO.getGoodsImg())
-                .status(OrderStatusEnum.PENDING_PAYMENT.getStatus())
-                .expireTime(expireTime)
-                .isDeleted(0)
-                .createTime(LocalDateTime.now())
-                .updateTime(LocalDateTime.now())
-                .build();
-        try {
-            seckillOrderDOMapper.insert(orderDO);
-        } catch (DuplicateKeyException e) {
-            log.warn("==> 重复下单, userId: {}, activityId: {}, goodsId: {}", userId, activityId, goodsId);
-            throw new BizException(ResponseCodeEnum.SECKILL_ORDER_DUPLICATE);
-        }
+
+        // 编程式事务，精确控制事务边界
+        SeckillOrderDO orderDO = transactionTemplate.execute(status -> {
+            // 7. 扣减库存
+            int count = seckillGoodsDOMapper.deductStock(seckillGoodsDO.getId());
+            if (count == 0) {
+                throw new BizException(ResponseCodeEnum.SECKILL_GOODS_SOLD_OUT);
+            }
+
+            // 8. 创建订单
+            SeckillOrderDO order = SeckillOrderDO.builder()
+                    .userId(userId)
+                    .activityId(activityId)
+                    .goodsId(goodsId)
+                    .orderNo(orderNo)
+                    .seckillPrice(seckillGoodsDO.getSeckillPrice())
+                    .goodsName(goodsDO.getGoodsName())
+                    .goodsImg(goodsDO.getGoodsImg())
+                    .status(OrderStatusEnum.PENDING_PAYMENT.getStatus())
+                    .expireTime(expireTime)
+                    .isDeleted(0)
+                    .createTime(LocalDateTime.now())
+                    .updateTime(LocalDateTime.now())
+                    .build();
+
+            try {
+                seckillOrderDOMapper.insert(order);
+            } catch (DuplicateKeyException e) {
+                log.warn("==> 重复下单, userId: {}, activityId: {}, goodsId: {}", userId, activityId, goodsId);
+                throw new BizException(ResponseCodeEnum.SECKILL_ORDER_DUPLICATE);
+            }
+
+            return order;
+        });
+
+
         log.info("==> 秒杀下单成功, orderId: {}, orderNo: {}", orderDO.getId(), orderNo);
 
         // 9. 组装响应数据
@@ -121,6 +165,7 @@ public class OrderServiceImpl implements OrderService {
                 .status(OrderStatusEnum.PENDING_PAYMENT.getStatus())
                 .expireTime(expireTime)
                 .build();
+
         return Response.success(rspVO);
     }
 }
