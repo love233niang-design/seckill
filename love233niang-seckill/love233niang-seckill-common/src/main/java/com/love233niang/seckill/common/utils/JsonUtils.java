@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 
+import java.util.List;
+
 /**
  * @author: hq
  * @url: www.love233niang.com
@@ -36,6 +38,20 @@ public class JsonUtils {
     // 让方法签名更干净，不需要手动抛出 throws JsonProcessingException 异常。
     public static String toJsonString(Object obj) {
         return OBJECT_MAPPER.writeValueAsString(obj);
+    }
+
+    /**
+     * 将 JSON 字符串转换为指定类型的集合
+     *
+     * @param json
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    @SneakyThrows
+    public static <T> List<T> parseList(String json, Class<T> clazz) {
+        return OBJECT_MAPPER.readValue(json,
+                OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
     }
 
     /**
