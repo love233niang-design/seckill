@@ -125,7 +125,8 @@ public class GoodsServiceImpl implements GoodsService {
         return Response.success(rspVOS);
     }
 
-    /**·
+    /**
+     * ·
      * 实时补充库存字段（库存变化频繁，每次从数据库实时查询）
      *
      * @param goodsList  缓存中的商品列表
@@ -158,6 +159,25 @@ public class GoodsServiceImpl implements GoodsService {
         // 活动 ID
         Long activityId = reqVO.getActivityId();
         log.info("==> 查询秒杀商品详情, goodsId: {}, activityId: {}", goodsId, activityId);
+
+        String redisKey = RedisKeyConstants.GOODS_DETAIL_PREFIX + activityId + ":" + goodsId;
+
+        String redisJsonValue = stringRedisTemplate.opsForValue().get(redisKey);
+        if (StrUtil.isNotBlank(redisJsonValue)) {
+            log.info("==> 命中商品详情缓存, redisKey: {}", redisKey);
+
+            FindSeckillGoodsDetailRspVO cachedDetail = JsonUtils.parseObject(redisJsonValue, FindSeckillGoodsDetailRspVO.class);
+
+            SeckillGoodsDO seckillGoodsDO = seckillGoodsDOMapper.selectStockByActivityIdAndGoodsId(activityId, goodsId);
+            if (Objects.nonNull(seckillGoodsDO)) {
+                cachedDetail.setSeckillStock(seckillGoodsDO.getSeckillStock());
+            }
+
+
+            ActivityStatusEnum activityStatusEnum = calculateActivityStatus(cachedDetail.getBeginTime(), cachedDetail.getEndTime());
+            cachedDetail.setActivityStatus(activityStatusEnum.getStatus());
+            return Response.success(cachedDetail);
+        }
 
         // 1. 根据活动 ID 查询活动信息，校验活动是否存在
         SeckillActivityDO activityDO = seckillActivityDOMapper.selectByPrimaryKey(activityId);
@@ -214,6 +234,9 @@ public class GoodsServiceImpl implements GoodsService {
         if (Objects.nonNull(goodsDetailDO)) {
             rspVO.setGoodsDetail(goodsDetailDO.getDetailContent());
         }
+
+        log.info("==> 商品详情缓存未命中，将数据写入 Redis, redisKey: {}", redisKey);
+        stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVO), RedisKeyConstants.GOODS_DETAIL_TTL_MINUTES, TimeUnit.MINUTES);
 
         return Response.success(rspVO);
     }

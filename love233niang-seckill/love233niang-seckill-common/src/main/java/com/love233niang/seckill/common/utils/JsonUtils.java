@@ -45,8 +45,8 @@ public class JsonUtils {
      *
      * @param json
      * @param clazz
-     * @return
      * @param <T>
+     * @return
      */
     @SneakyThrows
     public static <T> List<T> parseList(String json, Class<T> clazz) {
@@ -61,6 +61,11 @@ public class JsonUtils {
      */
     public static void init(ObjectMapper objectMapper) {
         OBJECT_MAPPER = objectMapper;
+    }
+
+    @SneakyThrows
+    public static <T> T parseObject(String json, Class<T> clazz) {
+        return OBJECT_MAPPER.readValue(json, clazz);
     }
 }
 
