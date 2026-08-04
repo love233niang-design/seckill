@@ -15,13 +15,13 @@ import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailRspVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListReqVO;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsListRspVO;
 import com.love233niang.seckill.goods.service.GoodsService;
-import com.mysql.cj.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -120,7 +120,13 @@ public class GoodsServiceImpl implements GoodsService {
         }
 
         log.info("==> 商品列表缓存未命中，将数据写入 Redis, redisKey: {}", redisKey);
-        stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVOS), RedisKeyConstants.GOODS_LIST_TTL_MINUTES, TimeUnit.MINUTES);
+        Long ttlSeconds = RedisKeyConstants.calculateTtlSeconds(activityDO.getEndTime());
+        if (Objects.nonNull(ttlSeconds) && ttlSeconds > 0) {
+            // 活动未开始设置动态 TTL 值
+            stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVOS), ttlSeconds, TimeUnit.SECONDS);
+        } else {
+            stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVOS), RedisKeyConstants.ENDED_ACTIVITY_TTL_MINUTES, TimeUnit.MINUTES);
+        }
 
         return Response.success(rspVOS);
     }
@@ -236,9 +242,127 @@ public class GoodsServiceImpl implements GoodsService {
         }
 
         log.info("==> 商品详情缓存未命中，将数据写入 Redis, redisKey: {}", redisKey);
-        stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVO), RedisKeyConstants.GOODS_DETAIL_TTL_MINUTES, TimeUnit.MINUTES);
+        Long ttlSeconds = RedisKeyConstants.calculateTtlSeconds(activityDO.getEndTime());
+        if (Objects.nonNull(ttlSeconds) && ttlSeconds > 0) {
+            stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVO), ttlSeconds, TimeUnit.SECONDS);
+        } else {
+            stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVO), RedisKeyConstants.ENDED_ACTIVITY_TTL_MINUTES, TimeUnit.MINUTES);
+
+        }
 
         return Response.success(rspVO);
+    }
+
+
+    /**
+     * 预热指定活动的商品缓存
+     *
+     * @param activityId
+     * @return
+     */
+    @Override
+    public Response<?> preheatActivityGoods(Long activityId) {
+        log.info("==> 开始预热活动商品缓存, activityId: {}", activityId);
+        // 1. 查询活动信息（获取活动结束时间，用于计算动态 TTL）
+        SeckillActivityDO activityDO = seckillActivityDOMapper.selectByPrimaryKey(activityId);
+        if (Objects.isNull(activityDO)) {
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
+        }
+        // 2. 计算动态缓存 TTL 过期时间
+        Long ttlSeconds = RedisKeyConstants.calculateTtlSeconds(activityDO.getEndTime());
+        if (Objects.isNull(ttlSeconds) || ttlSeconds <= 0) {
+            log.info("==> 预热跳过：活动已结束, activityId: {}", activityId);
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_ENDED);
+        }
+        // 3. 查询该活动下所有秒杀商品
+        List<SeckillGoodsDO> seckillGoodsDOS = seckillGoodsDOMapper.selectByActivityId(activityId);
+        if (CollUtil.isEmpty(seckillGoodsDOS)) {
+            log.info("==> 预热跳过：活动下无商品, activityId: {}", activityId);
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_GOODS_EMPTY);
+        }
+        // 4. 批量查询商品原价
+        List<Long> goodsIds = seckillGoodsDOS.stream().map(SeckillGoodsDO::getGoodsId).collect(Collectors.toList());
+        List<GoodsDO> goodsDOS = goodsDOMapper.selectByIds(goodsIds);
+        Map<Long, GoodsDO> goodsMap = goodsDOS.stream()
+                .collect(Collectors.toMap(GoodsDO::getId, goodsDO -> goodsDO));
+
+        // 5. 预热商品列表缓存
+        String listKey = RedisKeyConstants.GOODS_LIST_PREFIX + activityId;
+        List<FindSeckillGoodsListRspVO> listRspVOS = new ArrayList<>();
+        for (SeckillGoodsDO sg : seckillGoodsDOS) {
+            FindSeckillGoodsListRspVO vo = new FindSeckillGoodsListRspVO();
+            vo.setId(sg.getId());
+            vo.setGoodsId(sg.getGoodsId());
+            vo.setActivityId(sg.getActivityId());
+            vo.setSeckillTitle(sg.getSeckillTitle());
+            vo.setSeckillImg(sg.getSeckillImg());
+            vo.setSeckillPrice(sg.getSeckillPrice());
+            vo.setSeckillTotal(sg.getSeckillTotal());
+            vo.setSeckillStock(sg.getSeckillStock());
+            vo.setActivityStatus(calculateActivityStatus(activityDO).getStatus());
+            vo.setBeginTime(activityDO.getBeginTime());
+            vo.setEndTime(activityDO.getEndTime());
+
+            GoodsDO goodsDO = goodsMap.get(sg.getGoodsId());
+            if (Objects.nonNull(goodsDO)) {
+                vo.setGoodsPrice(goodsDO.getGoodsPrice());
+            }
+
+            listRspVOS.add(vo);
+        }
+
+        stringRedisTemplate.opsForValue().set(listKey, JsonUtils.toJsonString(listRspVOS), ttlSeconds, TimeUnit.SECONDS);
+        log.info("==> 预热商品列表缓存成功, key: {}, TTL: {}s", listKey, ttlSeconds);
+
+        // 6. 预热每个商品的详情缓存
+        for (SeckillGoodsDO sg : seckillGoodsDOS) {
+            String detailKey = RedisKeyConstants.GOODS_DETAIL_PREFIX + activityId + ":" + sg.getGoodsId();
+            // 查询商品基本信息
+            GoodsDO goodsDO = goodsMap.get(sg.getGoodsId());
+
+            // 查询商品轮播图
+            List<GoodsImgDO> goodsImgDOS = goodsImgDOMapper.selectByGoodsId(sg.getGoodsId());
+            List<String> goodsImgs = null;
+            if (CollUtil.isNotEmpty(goodsImgDOS)) {
+                goodsImgs = goodsImgDOS.stream()
+                        .map(GoodsImgDO::getImgUrl)
+                        .toList();
+            }
+
+            // 查询商品详情 HTML
+            GoodsDetailDO goodsDetailDO = goodsDetailDOMapper.selectByGoodsId(sg.getGoodsId());
+
+            // 组装详情 VO
+            FindSeckillGoodsDetailRspVO detailVO = FindSeckillGoodsDetailRspVO.builder()
+                    .id(sg.getId())
+                    .goodsId(sg.getGoodsId())
+                    .activityId(sg.getActivityId())
+                    .seckillPrice(sg.getSeckillPrice())
+                    .seckillTotal(sg.getSeckillTotal())
+                    .seckillStock(sg.getSeckillStock())
+                    .activityStatus(calculateActivityStatus(activityDO).getStatus())
+                    .beginTime(activityDO.getBeginTime())
+                    .endTime(activityDO.getEndTime())
+                    .goodsImgs(goodsImgs)
+                    .build();
+
+            // 设置商品名称和原价
+            if (Objects.nonNull(goodsDO)) {
+                detailVO.setGoodsName(goodsDO.getGoodsName());
+                detailVO.setGoodsPrice(goodsDO.getGoodsPrice());
+            }
+
+            // 设置商品详情 HTML
+            if (Objects.nonNull(goodsDetailDO)) {
+                detailVO.setGoodsDetail(goodsDetailDO.getDetailContent());
+            }
+
+            stringRedisTemplate.opsForValue().set(detailKey, JsonUtils.toJsonString(detailVO),
+                    ttlSeconds, TimeUnit.SECONDS);
+        }
+        log.info("==> 预热活动 {} 的 {} 个商品详情缓存完成", activityId, seckillGoodsDOS.size());
+
+        return Response.success();
     }
 
 
