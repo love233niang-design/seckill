@@ -31,6 +31,26 @@ public class RedisKeyConstants {
      */
     public static final long SAFETY_BUFFER_SECONDS = 30 * 60; // 30 分钟
 
+    /**
+     * 缓存空值，用于防止缓存穿透
+     */
+    public static final String NULL_CACHE_VALUE = "NULL";
+
+    /**
+     * 缓存空值的过期时间（单位：分钟）
+     */
+    public static final long NULL_CACHE_TTL_MINUTES = 5;
+
+    /**
+     * 活动布隆过滤器 Key
+     */
+    public static final String SECKILL_ACTIVITY_BLOOM_KEY = "seckill:bloom:activity";
+
+    /**
+     * 商品布隆过滤器 Key
+     */
+    public static final String SECKILL_GOODS_BLOOM_KEY = "seckill:bloom:goods";
+
 
     /**
      * 根据活动结束时间动态计算缓存 TTL（秒）
@@ -48,14 +68,4 @@ public class RedisKeyConstants {
                 + SAFETY_BUFFER_SECONDS;
         return ttlSeconds > 0 ? ttlSeconds : null;
     }
-
-    /**
-     * 缓存空值，用于防止缓存穿透
-     */
-    public static final String NULL_CACHE_VALUE = "NULL";
-
-    /**
-     * 缓存空值的过期时间（单位：分钟）
-     */
-    public static final long NULL_CACHE_TTL_MINUTES = 5;
 }
