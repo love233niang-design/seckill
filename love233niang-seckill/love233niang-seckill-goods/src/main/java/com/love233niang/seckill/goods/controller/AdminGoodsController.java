@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Author: 犬小哈
+ * @Author: hq
  * @Date: 2026/6/2 19:16
  * @Version: v1.0.0
  * @Description: 管理端 - 商品管理

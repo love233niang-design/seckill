@@ -59,7 +59,12 @@ public class GoodsServiceImpl implements GoodsService {
         String redisKey = RedisKeyConstants.GOODS_LIST_PREFIX + activityId;
 
         String redisJsonValue = stringRedisTemplate.opsForValue().get(redisKey);
+
         if (StrUtil.isNotBlank(redisJsonValue)) {
+            if (Objects.equals(RedisKeyConstants.NULL_CACHE_VALUE, redisJsonValue)) {
+                log.info("==> 命中空值缓存，活动不存在, redisKey: {}", redisKey);
+                throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
+            }
             log.info("==> 命中商品列表缓存, redisKey: {}", redisKey);
 
             List<FindSeckillGoodsListRspVO> cachedList = JsonUtils.parseList(redisJsonValue, FindSeckillGoodsListRspVO.class);
@@ -79,6 +84,7 @@ public class GoodsServiceImpl implements GoodsService {
         // 查询活动信息
         SeckillActivityDO activityDO = seckillActivityDOMapper.selectByPrimaryKey(activityId);
         if (Objects.isNull(activityDO)) {
+            cacheNullValue(redisKey);
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
         }
         // 根据活动id查询秒杀商品列表
@@ -170,6 +176,10 @@ public class GoodsServiceImpl implements GoodsService {
 
         String redisJsonValue = stringRedisTemplate.opsForValue().get(redisKey);
         if (StrUtil.isNotBlank(redisJsonValue)) {
+            if (Objects.equals(RedisKeyConstants.NULL_CACHE_VALUE, redisJsonValue)) {
+                log.info("==> 命中空值缓存，商品不存在, redisKey: {}", redisKey);
+                throw new BizException(ResponseCodeEnum.SECKILL_GOODS_NOT_EXIST);
+            }
             log.info("==> 命中商品详情缓存, redisKey: {}", redisKey);
 
             FindSeckillGoodsDetailRspVO cachedDetail = JsonUtils.parseObject(redisJsonValue, FindSeckillGoodsDetailRspVO.class);
@@ -188,12 +198,14 @@ public class GoodsServiceImpl implements GoodsService {
         // 1. 根据活动 ID 查询活动信息，校验活动是否存在
         SeckillActivityDO activityDO = seckillActivityDOMapper.selectByPrimaryKey(activityId);
         if (Objects.isNull(activityDO)) {
+            cacheNullValue(redisKey);
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
         }
 
         // 2. 根据活动 ID 和商品 ID 查询秒杀商品
         SeckillGoodsDO seckillGoodsDO = seckillGoodsDOMapper.selectByActivityIdAndGoodsId(activityId, goodsId);
         if (Objects.isNull(seckillGoodsDO)) {
+            cacheNullValue(redisKey);
             throw new BizException(ResponseCodeEnum.SECKILL_GOODS_NOT_EXIST);
         }
 
@@ -393,4 +405,17 @@ public class GoodsServiceImpl implements GoodsService {
             return ActivityStatusEnum.ING;
         }
     }
+
+    /**
+     * 缓存空值，防止缓存穿透
+     *
+     * @param redisKey
+     */
+    private void cacheNullValue(String redisKey) {
+        stringRedisTemplate.opsForValue().set(redisKey, RedisKeyConstants.NULL_CACHE_VALUE,
+                RedisKeyConstants.NULL_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+
+        log.info("==> 缓存空值，防止穿透, redisKey: {}, TTL: {}min", redisKey, RedisKeyConstants.NULL_CACHE_TTL_MINUTES);
+    }
+
 }

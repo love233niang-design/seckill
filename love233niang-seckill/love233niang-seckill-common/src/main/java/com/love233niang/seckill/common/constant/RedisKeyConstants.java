@@ -48,4 +48,14 @@ public class RedisKeyConstants {
                 + SAFETY_BUFFER_SECONDS;
         return ttlSeconds > 0 ? ttlSeconds : null;
     }
+
+    /**
+     * 缓存空值，用于防止缓存穿透
+     */
+    public static final String NULL_CACHE_VALUE = "NULL";
+
+    /**
+     * 缓存空值的过期时间（单位：分钟）
+     */
+    public static final long NULL_CACHE_TTL_MINUTES = 5;
 }
