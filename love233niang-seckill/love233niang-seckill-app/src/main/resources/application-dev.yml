@@ -48,6 +48,13 @@ spring:
           min-idle: 5
           # 连接池最大阻塞等待时间（毫秒），-1 表示无限制
           max-wait: 3000
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: rabbitmq
+    password: rabbitmq
+    virtual-host: /rabbitmq
+    connection-timeout: 15000
 
 # MyBatis 开发环境专属配置
 mybatis:
@@ -65,6 +72,5 @@ thread-pool:
   queue-capacity: 100
   # 空闲线程存活时间（秒）
   keep-alive-seconds: 60
-
 
 
