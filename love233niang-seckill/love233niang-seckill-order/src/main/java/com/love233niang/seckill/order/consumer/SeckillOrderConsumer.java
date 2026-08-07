@@ -14,7 +14,7 @@ public class SeckillOrderConsumer {
     @Autowired
     private OrderService orderService;
 
-    @RabbitListener(queues = RabbitMQConfig.SECKILL_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.SECKILL_QUEUE, concurrency = "5-10")
     public void consume(SeckillOrderMqDTO message) {
         log.info("## 收到秒杀订单消息: {}", message);
         orderService.createSeckillOrder(message);
