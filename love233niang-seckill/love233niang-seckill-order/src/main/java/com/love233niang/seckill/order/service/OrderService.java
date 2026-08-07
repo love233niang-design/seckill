@@ -1,6 +1,7 @@
 package com.love233niang.seckill.order.service;
 
 import com.love233niang.seckill.common.utils.Response;
+import com.love233niang.seckill.order.model.dto.SeckillOrderMqDTO;
 import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
 import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
 
@@ -19,4 +20,12 @@ public interface OrderService {
      * @return
      */
     Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO);
+
+
+    /**
+     * 异步消费秒杀下单消息：扣减库存 + 创建订单
+     *
+     * @param message
+     */
+    void createSeckillOrder(SeckillOrderMqDTO message);
 }

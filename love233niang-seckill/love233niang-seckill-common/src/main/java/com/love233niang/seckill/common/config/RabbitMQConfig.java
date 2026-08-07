@@ -29,6 +29,22 @@ public class RabbitMQConfig {
      */
     public static final String TEST_ROUTING_KEY = "seckill.test.routing.key";
 
+
+    /**
+     * 秒杀订单交换机名称
+     */
+    public static final String SECKILL_EXCHANGE = "seckill.order.exchange";
+
+    /**
+     * 秒杀订单队列名称
+     */
+    public static final String SECKILL_QUEUE = "seckill.order.queue";
+
+    /**
+     * 秒杀下单路由键
+     */
+    public static final String SECKILL_ROUTING_KEY = "seckill.order.create";
+
     /**
      * 自定义消息转换器使用 Jakson 序列化（Json）
      *
@@ -70,5 +86,22 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(testQueue())
                 .to(testExchange())
                 .with(TEST_ROUTING_KEY);
+    }
+
+    @Bean
+    public DirectExchange seckillOrderExchange() {
+        return new DirectExchange(SECKILL_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue seckillOrderQueue() {
+        return new Queue(SECKILL_QUEUE, true);
+    }
+
+    @Bean
+    public Binding seckillOrderBinding() {
+        return BindingBuilder.bind(seckillOrderQueue())
+                .to(seckillOrderExchange())
+                .with(SECKILL_ROUTING_KEY);
     }
 }
