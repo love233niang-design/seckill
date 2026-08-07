@@ -1,10 +1,7 @@
 package com.love233niang.seckill.common.config;
 
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +41,22 @@ public class RabbitMQConfig {
      * 秒杀下单路由键
      */
     public static final String SECKILL_ROUTING_KEY = "seckill.order.create";
+
+    /**
+     * 秒杀订单死信交换机名称
+     */
+    public static final String SECKILL_DLX_EXCHANGE = "seckill.order.dlx.exchange";
+
+    /**
+     * 秒杀订单死信队列名称
+     */
+    public static final String SECKILL_DLX_QUEUE = "seckill.order.dlx.queue";
+
+    /**
+     * 秒杀订单死信路由键
+     */
+    public static final String SECKILL_DLX_ROUTING_KEY = "seckill.order.dlx";
+
 
     /**
      * 自定义消息转换器使用 Jakson 序列化（Json）
@@ -95,7 +108,10 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue seckillOrderQueue() {
-        return new Queue(SECKILL_QUEUE, true);
+        return QueueBuilder.durable(SECKILL_QUEUE)
+                .withArgument("x-dead-letter-exchange", SECKILL_DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", SECKILL_DLX_ROUTING_KEY)
+                .build();
     }
 
     @Bean
@@ -103,5 +119,33 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(seckillOrderQueue())
                 .to(seckillOrderExchange())
                 .with(SECKILL_ROUTING_KEY);
+    }
+
+    /**
+     * 秒杀订单死信交换机（Direct 类型，持久化）
+     */
+    @Bean
+    public DirectExchange seckillOrderDeadLetterExchange() {
+        return new DirectExchange(SECKILL_DLX_EXCHANGE, true, false);
+    }
+
+    /**
+     * 秒杀订单死信队列（持久化）
+     */
+    @Bean
+    public Queue seckillOrderDeadLetterQueue() {
+        return QueueBuilder.durable(SECKILL_DLX_QUEUE).build();
+    }
+
+    /**
+     * 将秒杀订单死信队列绑定到死信交换机，指定死信路由键
+     */
+    @Bean
+    public Binding seckillOrderDeadLetterBinding(Queue seckillOrderDeadLetterQueue,
+                                                 DirectExchange seckillOrderDeadLetterExchange) {
+        return BindingBuilder.bind(seckillOrderDeadLetterQueue)
+                .to(seckillOrderDeadLetterExchange)
+                .with(SECKILL_DLX_ROUTING_KEY);
+
     }
 }

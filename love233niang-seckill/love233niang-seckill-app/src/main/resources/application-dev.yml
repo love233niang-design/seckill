@@ -55,6 +55,10 @@ spring:
     password: rabbitmq
     virtual-host: /rabbitmq
     connection-timeout: 15000
+    listener:
+      simple:
+        prefetch: 5 # 每个线程预取 5 条消息
+        acknowledge-mode: manual
 
 # MyBatis 开发环境专属配置
 mybatis:
