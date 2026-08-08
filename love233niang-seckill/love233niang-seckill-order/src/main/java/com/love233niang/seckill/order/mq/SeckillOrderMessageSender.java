@@ -1,0 +1,36 @@
+package com.love233niang.seckill.order.mq;
+
+import com.love233niang.seckill.common.config.RabbitMQConfig;
+import com.love233niang.seckill.order.model.dto.SeckillOrderMqDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.connection .CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class SeckillOrderMessageSender {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    /**
+     * 发送秒杀下单消息。
+     *
+     * @param message 秒杀下单消息体
+     */
+    public void send(SeckillOrderMqDTO message) {
+        // 使用订单号作为关联 ID，方便 ConfirmCallback 中定位是哪一笔订单消息发送失败。
+        CorrelationData correlationData = new CorrelationData(message.getOrderNo());
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.SECKILL_EXCHANGE,
+                RabbitMQConfig.SECKILL_ROUTING_KEY,
+                message,
+                correlationData
+        );
+
+        log.info("==> 秒杀下单消息发送请求已提交, orderNo: {}, userId: {}, activityId: {}, goodsId: {}",
+                message.getOrderNo(), message.getUserId(), message.getActivityId(), message.getGoodsId());
+    }
+}

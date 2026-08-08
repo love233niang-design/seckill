@@ -101,11 +101,17 @@ public class RabbitMQConfig {
                 .with(TEST_ROUTING_KEY);
     }
 
+    /**
+     * 秒杀订单交换机（Direct 类型，持久化）
+     */
     @Bean
     public DirectExchange seckillOrderExchange() {
         return new DirectExchange(SECKILL_EXCHANGE, true, false);
     }
 
+    /**
+     * 秒杀订单队列（持久化）
+     */
     @Bean
     public Queue seckillOrderQueue() {
         return QueueBuilder.durable(SECKILL_QUEUE)
@@ -114,6 +120,9 @@ public class RabbitMQConfig {
                 .build();
     }
 
+    /**
+     * 将秒杀订单队列绑定到秒杀订单交换机，指定路由键
+     */
     @Bean
     public Binding seckillOrderBinding() {
         return BindingBuilder.bind(seckillOrderQueue())

@@ -16,6 +16,7 @@ import com.love233niang.seckill.order.enums.OrderStatusEnum;
 import com.love233niang.seckill.order.model.dto.SeckillOrderMqDTO;
 import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
 import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
+import com.love233niang.seckill.order.mq.SeckillOrderMessageSender;
 import com.love233niang.seckill.order.service.OrderService;
 import com.love233niang.seckill.order.utils.OrderLockUtils;
 import jakarta.annotation.Resource;
@@ -47,6 +48,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderLockUtils orderLockUtils;
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private SeckillOrderMessageSender seckillOrderMessageSender;
 
     /**
      * 秒杀下单
@@ -121,11 +124,8 @@ public class OrderServiceImpl implements OrderService {
                     .requestTime(now)
                     .build();
 
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.SECKILL_EXCHANGE,
-                    RabbitMQConfig.SECKILL_ROUTING_KEY,
-                    seckillOrderMqDTO
-            );
+            // 发送 MQ，内部会携带 CorrelationData(orderNo)，方便生产者确认回调定位消息
+            seckillOrderMessageSender.send(seckillOrderMqDTO);
 
             log.info("==> 秒杀下单消息已发送至 MQ, orderNo: {}, userId: {}, activityId: {}, goodsId: {}",
                     orderNo, userId, activityId, goodsId);
