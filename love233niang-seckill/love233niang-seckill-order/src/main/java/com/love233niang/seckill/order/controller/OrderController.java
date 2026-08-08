@@ -4,6 +4,8 @@ import com.love233niang.seckill.common.aspect.ApiOperationLog;
 import com.love233niang.seckill.common.utils.Response;
 import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
 import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
+import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultReqVO;
+import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultRspVO;
 import com.love233niang.seckill.order.service.OrderService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -38,4 +40,17 @@ public class OrderController {
     public Response<DoSeckillRspVO> doSeckill(@RequestBody @Validated DoSeckillReqVO reqVO) {
         return orderService.doSeckill(reqVO);
     }
+
+    /**
+     * 查询秒杀订单处理结果
+     *
+     * @param reqVO
+     * @return
+     */
+    @PostMapping("/result")
+    @ApiOperationLog(description = "查询秒杀订单处理结果")
+    public Response<FindSeckillOrderResultRspVO> findSeckillOrderResult(@RequestBody @Validated FindSeckillOrderResultReqVO reqVO) {
+        return orderService.findSeckillOrderResult(reqVO);
+    }
+
 }

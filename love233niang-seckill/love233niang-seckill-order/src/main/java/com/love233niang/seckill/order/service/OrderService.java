@@ -4,6 +4,8 @@ import com.love233niang.seckill.common.utils.Response;
 import com.love233niang.seckill.order.model.dto.SeckillOrderMqDTO;
 import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
 import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
+import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultReqVO;
+import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultRspVO;
 
 /**
  * @Author: hq
@@ -28,4 +30,13 @@ public interface OrderService {
      * @param message
      */
     void createSeckillOrder(SeckillOrderMqDTO message);
+
+    /**
+     * 查询秒杀订单处理结果
+     *
+     * @param reqVO
+     * @return
+     */
+    Response<FindSeckillOrderResultRspVO> findSeckillOrderResult(FindSeckillOrderResultReqVO reqVO);
+
 }
