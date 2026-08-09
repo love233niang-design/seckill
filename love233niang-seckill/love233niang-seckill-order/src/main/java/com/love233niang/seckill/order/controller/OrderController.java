@@ -1,19 +1,21 @@
 package com.love233niang.seckill.order.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.love233niang.seckill.common.aspect.ApiOperationLog;
 import com.love233niang.seckill.common.utils.Response;
-import com.love233niang.seckill.order.model.vo.DoSeckillReqVO;
-import com.love233niang.seckill.order.model.vo.DoSeckillRspVO;
-import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultReqVO;
-import com.love233niang.seckill.order.model.vo.FindSeckillOrderResultRspVO;
+import com.love233niang.seckill.order.model.vo.*;
 import com.love233niang.seckill.order.service.OrderService;
+import com.love233niang.seckill.order.service.SeckillOrderResultNotifyService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * @Author: hq
@@ -26,8 +28,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class OrderController {
 
-    @Resource
+    @Autowired
     private OrderService orderService;
+    @Autowired
+    private SeckillOrderResultNotifyService seckillOrderResultNotifyService;
 
     /**
      * 秒杀下单
@@ -52,5 +56,17 @@ public class OrderController {
     public Response<FindSeckillOrderResultRspVO> findSeckillOrderResult(@RequestBody @Validated FindSeckillOrderResultReqVO reqVO) {
         return orderService.findSeckillOrderResult(reqVO);
     }
-
+    /**
+     * 订阅秒杀订单处理结果
+     *
+     * @param reqVO
+     * @return
+     */
+    @PostMapping(value = "/result/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ApiOperationLog(description = "订阅秒杀订单处理结果")
+    public SseEmitter subscribeSeckillOrderResult(@RequestBody @Validated SubscribeSeckillOrderResultReqVO reqVO) {
+        // 获取当前登录用户 ID
+        long userId = StpUtil.getLoginIdAsLong();
+        return seckillOrderResultNotifyService.subscribe(userId, reqVO.getOrderNo());
+    }
 }

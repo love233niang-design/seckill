@@ -3,6 +3,8 @@ package com.love233niang.seckill.order.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * @Author: hq
  * @Date: 2026/5/8 18:28
@@ -52,7 +54,7 @@ public enum OrderStatusEnum {
      */
     public static OrderStatusEnum getByStatus(Integer status) {
         for (OrderStatusEnum value : values()) {
-            if (value.getStatus() == status) {
+            if (Objects.equals(value.getStatus(), status)) {
                 return value;
             }
         }

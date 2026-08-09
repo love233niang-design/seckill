@@ -20,13 +20,15 @@ public class SaTokenConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册 SaToken 拦截器，打开注解式鉴权功能
         registry.addInterceptor(new SaInterceptor(handle -> {
-            // 秒杀下单接口，需要登录
-            SaRouter.match("/seckill/order", r -> StpUtil.checkLogin());
-            // 登出接口，需要登录
-            SaRouter.match("/user/logout", r -> StpUtil.checkLogin());
-            // 管理端接口，需要登录
-            SaRouter.match("/admin/**", r -> StpUtil.checkLogin());
-        })).addPathPatterns("/**");
+                    // 秒杀下单接口，需要登录
+                    SaRouter.match("/seckill/order", r -> StpUtil.checkLogin());
+                    // 登出接口，需要登录
+                    SaRouter.match("/user/logout", r -> StpUtil.checkLogin());
+                    // 管理端接口，需要登录
+                    SaRouter.match("/admin/**", r -> StpUtil.checkLogin());
+                })).addPathPatterns("/**")
+                .excludePathPatterns("/seckill/order/result/subscribe");
+        ;
     }
 }
 
