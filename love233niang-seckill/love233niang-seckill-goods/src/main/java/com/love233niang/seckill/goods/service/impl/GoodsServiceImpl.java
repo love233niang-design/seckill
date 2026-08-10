@@ -462,7 +462,7 @@ public class GoodsServiceImpl implements GoodsService {
 
         // 7. 预热秒杀库存
         for (SeckillGoodsDO seckillGoodsDO : seckillGoodsDOS) {
-            String stockKey = RedisKeyConstants.SECKILL_STOCK_PREFIX + activityId + ":" + seckillGoodsDO.getGoodsId();
+            String stockKey = RedisKeyConstants.buildSeckillStockKey(activityId, seckillGoodsDO.getId());
             stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(seckillGoodsDO.getSeckillStock()),
                     ttlSeconds, TimeUnit.SECONDS);
 

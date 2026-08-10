@@ -67,6 +67,14 @@ public class RedisKeyConstants {
      */
     public static final String SECKILL_STOCK_PREFIX = "seckill:stock:";
 
+    /**
+     * 构建秒杀库存 Key
+     */
+    public static String buildSeckillStockKey(Long activityId, Long goodsId) {
+        return SECKILL_STOCK_PREFIX + activityId + ":" + goodsId;
+    }
+
+
 
     /**
      * 根据活动结束时间动态计算缓存 TTL（秒）
@@ -84,4 +92,6 @@ public class RedisKeyConstants {
                 + SAFETY_BUFFER_SECONDS;
         return ttlSeconds > 0 ? ttlSeconds : null;
     }
+
+
 }
