@@ -74,6 +74,18 @@ public class RedisKeyConstants {
         return SECKILL_STOCK_PREFIX + activityId + ":" + goodsId;
     }
 
+    /**
+     * 秒杀用户购买标记 Key 前缀
+     */
+    public static final String SECKILL_USER_ORDER_PREFIX = "seckill:user:order:";
+
+    /**
+     * 构建秒杀用户购买标记 Key
+     */
+    public static String buildSeckillUserOrderKey(Long activityId, Long goodsId, Long userId) {
+        return SECKILL_USER_ORDER_PREFIX + activityId + ":" + goodsId + ":" + userId;
+    }
+
 
 
     /**

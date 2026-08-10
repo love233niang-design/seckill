@@ -12,8 +12,13 @@ public interface SeckillStockService {
 
     /**
      * Redis Lua 原子预扣库存
+     *
+     * @param activityId
+     * @param goodsId
+     * @param userId
+     * @param userOrderTtlSeconds
+     * @return
      */
-    SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId);
-
+    SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId, Long userId, Long userOrderTtlSeconds);
 }
 
