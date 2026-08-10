@@ -164,6 +164,9 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public void createSeckillOrder(SeckillOrderMqDTO message) {
+        // 记录消费开始时间
+        long startTime = System.currentTimeMillis();
+
         Long activityId = message.getActivityId();
         Long userId = message.getUserId();
         Long goodsId = message.getGoodsId();
@@ -178,8 +181,17 @@ public class OrderServiceImpl implements OrderService {
 
         try {
             SeckillOrderDO orderDO = transactionTemplate.execute(status -> {
+
                 // 7. 扣减库存
+                long deductStartTime = System.currentTimeMillis();
+
                 int count = seckillGoodsDOMapper.deductStock(message.getSeckillGoodsId());
+
+                // 扣库存耗时
+                long deductCost = System.currentTimeMillis() - deductStartTime;
+                log.info("#### 秒杀扣库存耗时, orderNo: {}, seckillGoodsId: {}, cost: {} ms",
+                        orderNo, message.getSeckillGoodsId(), deductCost);
+
                 if (count == 0) {
                     log.warn("==> 扣减库存失败，商品已售罄或已下架, orderNo: {}", orderNo);
                     return null;
@@ -243,6 +255,9 @@ public class OrderServiceImpl implements OrderService {
             } else {
                 log.warn("==> 重复消费命中唯一索引，但未查询到当前用户订单, orderNo: {}, userId: {}", orderNo, userId);
             }
+        } finally {
+            log.info("#### 秒杀订单消费链路总耗时, orderNo: {}, cost: {} ms",
+                    orderNo, System.currentTimeMillis() - startTime);
         }
     }
 

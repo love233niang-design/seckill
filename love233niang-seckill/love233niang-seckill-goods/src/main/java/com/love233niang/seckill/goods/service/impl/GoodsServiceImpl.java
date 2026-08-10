@@ -460,6 +460,16 @@ public class GoodsServiceImpl implements GoodsService {
         }
         log.info("==> 预热活动 {} 的 {} 个商品详情缓存完成", activityId, seckillGoodsDOS.size());
 
+        // 7. 预热秒杀库存
+        for (SeckillGoodsDO seckillGoodsDO : seckillGoodsDOS) {
+            String stockKey = RedisKeyConstants.SECKILL_STOCK_PREFIX + activityId + ":" + seckillGoodsDO.getGoodsId();
+            stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(seckillGoodsDO.getSeckillStock()),
+                    ttlSeconds, TimeUnit.SECONDS);
+
+            log.info("==> 预热秒杀库存成功, key: {}, stock: {}, TTL: {}s",
+                    stockKey, seckillGoodsDO.getSeckillStock(), ttlSeconds);
+        }
+
         return Response.success();
     }
 
