@@ -8,6 +8,7 @@ import com.love233niang.seckill.common.domain.mapper.*;
 import com.love233niang.seckill.common.enums.ActivityStatusEnum;
 import com.love233niang.seckill.common.enums.ResponseCodeEnum;
 import com.love233niang.seckill.common.exception.BizException;
+import com.love233niang.seckill.common.model.dto.SeckillActivityGoodsMetaDTO;
 import com.love233niang.seckill.common.utils.JsonUtils;
 import com.love233niang.seckill.common.utils.Response;
 import com.love233niang.seckill.goods.model.vo.FindSeckillGoodsDetailReqVO;
@@ -303,28 +304,6 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     /**
-     * ·
-     * 实时补充库存字段（库存变化频繁，每次从数据库实时查询）
-     *
-     * @param goodsList  缓存中的商品列表
-     * @param activityId 活动 ID
-     */
-    public void supplementStock(List<FindSeckillGoodsListRspVO> goodsList, Long activityId) {
-        List<SeckillGoodsDO> seckillGoodsDOS = seckillGoodsDOMapper.selectStockByActivityId(activityId);
-
-        Map<Long, Integer> stockMap = seckillGoodsDOS.stream().collect(Collectors.toMap(SeckillGoodsDO::getId, SeckillGoodsDO::getSeckillStock));
-
-        for (FindSeckillGoodsListRspVO rspVO : goodsList) {
-            Integer stock = stockMap.get(rspVO.getId());
-            if (Objects.nonNull(stock)) {
-                rspVO.setSeckillStock(stock);
-            }
-        }
-
-    }
-
-
-    /**
      * 预热指定活动的商品缓存
      *
      * @param activityId
@@ -338,6 +317,13 @@ public class GoodsServiceImpl implements GoodsService {
         if (Objects.isNull(activityDO)) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_EXIST);
         }
+
+        // 判断活动是否已经结束
+        if (Objects.isNull(activityDO.getEndTime()) || !LocalDateTime.now().isBefore(activityDO.getEndTime())) {
+            log.info("==> 预热跳过：活动已结束, activityId: {}", activityId);
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_ENDED);
+        }
+
         // 2. 计算动态缓存 TTL 过期时间
         Long ttlSeconds = RedisKeyConstants.calculateTtlSeconds(activityDO.getEndTime());
         if (Objects.isNull(ttlSeconds) || ttlSeconds <= 0) {
@@ -409,6 +395,22 @@ public class GoodsServiceImpl implements GoodsService {
             listRspVOS.add(vo);
         }
 
+        // 预热秒杀下单元数据（主要用于下单接口中读取）
+        for (SeckillGoodsDO seckillGoodsDO : seckillGoodsDOS) {
+            String orderMetaKey = RedisKeyConstants.buildSeckillActivityGoodsMetaKey(activityId, seckillGoodsDO.getGoodsId());
+            SeckillActivityGoodsMetaDTO activityGoodsMetaDTO = SeckillActivityGoodsMetaDTO.builder()
+                    .seckillGoodsId(seckillGoodsDO.getId())
+                    .activityId(activityId)
+                    .goodsId(seckillGoodsDO.getGoodsId())
+                    .seckillPrice(seckillGoodsDO.getSeckillPrice())
+                    .beginTime(activityDO.getBeginTime())
+                    .endTime(activityDO.getEndTime())
+                    .build();
+
+            stringRedisTemplate.opsForValue().set(orderMetaKey, JsonUtils.toJsonString(activityGoodsMetaDTO),
+                    ttlSeconds, TimeUnit.SECONDS);
+        }
+
         stringRedisTemplate.opsForValue().set(listKey, JsonUtils.toJsonString(listRspVOS), ttlSeconds, TimeUnit.SECONDS);
         log.info("==> 预热商品列表缓存成功, key: {}, TTL: {}s", listKey, ttlSeconds);
 
@@ -472,6 +474,29 @@ public class GoodsServiceImpl implements GoodsService {
 
         return Response.success();
     }
+
+    /**
+     * ·
+     * 实时补充库存字段（库存变化频繁，每次从数据库实时查询）
+     *
+     * @param goodsList  缓存中的商品列表
+     * @param activityId 活动 ID
+     */
+    public void supplementStock(List<FindSeckillGoodsListRspVO> goodsList, Long activityId) {
+        List<SeckillGoodsDO> seckillGoodsDOS = seckillGoodsDOMapper.selectStockByActivityId(activityId);
+
+        Map<Long, Integer> stockMap = seckillGoodsDOS.stream().collect(Collectors.toMap(SeckillGoodsDO::getId, SeckillGoodsDO::getSeckillStock));
+
+        for (FindSeckillGoodsListRspVO rspVO : goodsList) {
+            Integer stock = stockMap.get(rspVO.getId());
+            if (Objects.nonNull(stock)) {
+                rspVO.setSeckillStock(stock);
+            }
+        }
+
+    }
+
+
 
 
     /**

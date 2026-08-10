@@ -9,6 +9,8 @@ public enum SeckillStockDeductResultEnum {
 
     SUCCESS(1L, "库存预扣成功"),
     REPEATED_ORDER(2L, "请勿重复参与秒杀"),
+    ACTIVITY_ENDED(4L, "秒杀活动已结束"),
+    ACTIVITY_NOT_STARTED(3L, "秒杀活动未开始"),
     SOLD_OUT(0L, "秒杀商品已售罄"),
     STOCK_NOT_PREHEATED(-1L, "秒杀库存未预热或者 key 过期");
 

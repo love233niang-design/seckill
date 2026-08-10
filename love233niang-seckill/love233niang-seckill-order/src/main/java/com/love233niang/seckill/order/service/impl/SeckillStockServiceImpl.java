@@ -41,7 +41,9 @@ public class SeckillStockServiceImpl implements SeckillStockService {
      * @return
      */
     @Override
-    public SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId, Long userId, Long userOrderTtlSeconds) {
+    public SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId,
+                                                       Long userId, Long userOrderTtlSeconds,
+                                                       Long activityBeginTimeMillis, Long activityEndTimeMillis) {
         // 构建库存 Redis Key
         String stockKey = RedisKeyConstants.buildSeckillStockKey(activityId, goodsId);
 
@@ -50,7 +52,8 @@ public class SeckillStockServiceImpl implements SeckillStockService {
 
         // 执行 Lua 脚本
         Long resultCode = stringRedisTemplate.execute(seckillPreDeductStockScript,
-                List.of(stockKey, userOrderKey), String.valueOf(userOrderTtlSeconds));
+                List.of(stockKey, userOrderKey), String.valueOf(userOrderTtlSeconds),
+                String.valueOf(activityBeginTimeMillis), String.valueOf(activityEndTimeMillis));
 
         if (Objects.isNull(resultCode)) {
             throw new IllegalStateException("执行秒杀库存预扣 Lua 脚本失败");

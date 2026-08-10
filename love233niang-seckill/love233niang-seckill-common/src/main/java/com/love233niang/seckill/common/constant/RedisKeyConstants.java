@@ -86,6 +86,18 @@ public class RedisKeyConstants {
         return SECKILL_USER_ORDER_PREFIX + activityId + ":" + goodsId + ":" + userId;
     }
 
+    /**
+     * 秒杀活动商品元数据 Key 前缀
+     */
+    public static final String SECKILL_ACTIVITY_GOODS_META_PREFIX = "seckill:activity:goods:meta:";
+
+    /**
+     * 构建秒杀活动商品元数据 Key
+     */
+    public static String buildSeckillActivityGoodsMetaKey(Long activityId, Long goodsId) {
+        return SECKILL_ACTIVITY_GOODS_META_PREFIX + activityId + ":" + goodsId;
+    }
+
 
 
     /**

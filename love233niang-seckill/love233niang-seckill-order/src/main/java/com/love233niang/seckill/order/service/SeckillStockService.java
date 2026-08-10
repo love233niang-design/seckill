@@ -19,6 +19,8 @@ public interface SeckillStockService {
      * @param userOrderTtlSeconds
      * @return
      */
-    SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId, Long userId, Long userOrderTtlSeconds);
+    SeckillStockDeductResultEnum preDeductStock(Long activityId, Long goodsId,
+                                                Long userId, Long userOrderTtlSeconds,
+                                                Long activityBeginTimeMillis, Long activityEndTimeMillis);
 }
 

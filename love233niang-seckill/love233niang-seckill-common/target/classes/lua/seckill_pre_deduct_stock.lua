@@ -7,6 +7,7 @@
 --         2-重复参与，3-活动未开始，4-活动已结束
 
 -- 开启单命令复制模式（Redis 7.0+ 必须）
+--redis.replicate_commands()
 
 -- 获取当前时间
 local redisTime = redis.call('TIME')
