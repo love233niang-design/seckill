@@ -56,6 +56,7 @@ public class OrderController {
     public Response<FindSeckillOrderResultRspVO> findSeckillOrderResult(@RequestBody @Validated FindSeckillOrderResultReqVO reqVO) {
         return orderService.findSeckillOrderResult(reqVO);
     }
+
     /**
      * 订阅秒杀订单处理结果
      *

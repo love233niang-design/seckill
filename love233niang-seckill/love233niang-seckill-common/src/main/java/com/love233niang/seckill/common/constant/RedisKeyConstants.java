@@ -98,6 +98,17 @@ public class RedisKeyConstants {
         return SECKILL_ACTIVITY_GOODS_META_PREFIX + activityId + ":" + goodsId;
     }
 
+    /**
+     * 秒杀订单待回补上下文 Key 前缀
+     */
+    public static final String SECKILL_ORDER_COMPENSATION_PREFIX = "seckill:order:compensation:";
+
+    /**
+     * 构建秒杀订单待回补上下文 Key
+     */
+    public static String buildSeckillOrderCompensationKey(String orderNo) {
+        return SECKILL_ORDER_COMPENSATION_PREFIX + orderNo;
+    }
 
 
     /**
