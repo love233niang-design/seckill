@@ -6,10 +6,7 @@ import lombok.Getter;
 import java.util.Objects;
 
 /**
- * @Author: hq
- * @Date: 2026/5/8 18:28
- * @Version: v1.0.0
- * @Description: 订单状态枚举
+ * 订单状态枚举
  **/
 @Getter
 @AllArgsConstructor

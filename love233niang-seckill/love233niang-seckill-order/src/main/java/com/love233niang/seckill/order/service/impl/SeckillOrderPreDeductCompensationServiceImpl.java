@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 秒杀订单预扣库存回补服务实现类
+ */
 @Service
 @Slf4j
 public class SeckillOrderPreDeductCompensationServiceImpl implements SeckillOrderPreDeductCompensationService {
@@ -96,7 +99,6 @@ public class SeckillOrderPreDeductCompensationServiceImpl implements SeckillOrde
                         .status(OrderStatusEnum.SECKILL_FAILED.getStatus())
                         .statusDesc(OrderStatusEnum.SECKILL_FAILED.getDescription())
                         .build());
-
 
     }
 }

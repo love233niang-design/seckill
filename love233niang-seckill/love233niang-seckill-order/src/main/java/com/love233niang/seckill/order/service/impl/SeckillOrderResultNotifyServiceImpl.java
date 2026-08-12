@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 秒杀订单处理结果通知服务实现类
+ */
 @Service
 @Slf4j
 public class SeckillOrderResultNotifyServiceImpl implements SeckillOrderResultNotifyService {

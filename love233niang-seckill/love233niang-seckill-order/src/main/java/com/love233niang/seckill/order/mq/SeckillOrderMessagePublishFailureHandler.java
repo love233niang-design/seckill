@@ -22,6 +22,9 @@ public class SeckillOrderMessagePublishFailureHandler implements MessagePublishF
                 "Confirm Nack: " + cause);
     }
 
+    /**
+     * Broker 返回 Return，表示 Broker 已成功将消息路由到指定的 Exchange，但是 Exchange 未能成功处理这条消息
+     */
     @Override
     public void handleReturned(String messageId, String exchange, String routingKey) {
         // 在这里执行 Redis 预扣回补

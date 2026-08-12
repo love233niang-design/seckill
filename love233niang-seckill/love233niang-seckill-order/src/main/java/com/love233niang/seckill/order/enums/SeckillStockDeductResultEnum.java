@@ -3,6 +3,9 @@ package com.love233niang.seckill.order.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * 秒杀库存预扣结果枚举
+ */
 @Getter
 @AllArgsConstructor
 public enum SeckillStockDeductResultEnum {

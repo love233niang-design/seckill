@@ -364,6 +364,7 @@ public class GoodsServiceImpl implements GoodsService {
         redissonClient.getKeys().expire(RedisKeyConstants.SECKILL_GOODS_BLOOM_KEY, 7, TimeUnit.DAYS);
         log.info("==> 商品布隆过滤器写入成功, activityId: {}, 商品数: {}", activityId, seckillGoodsDOS.size());
 
+
         // 4. 批量查询商品原价
         List<Long> goodsIds = seckillGoodsDOS.stream().map(SeckillGoodsDO::getGoodsId).collect(Collectors.toList());
         List<GoodsDO> goodsDOS = goodsDOMapper.selectByIds(goodsIds);

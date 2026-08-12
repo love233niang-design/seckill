@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 秒杀库存服务实现类
+ */
 @Service
 @Slf4j
 public class SeckillStockServiceImpl implements SeckillStockService {
@@ -38,13 +41,13 @@ public class SeckillStockServiceImpl implements SeckillStockService {
         this.seckillPreDeductStockScript.setLocation(new ClassPathResource("lua/seckill_pre_deduct_stock.lua"));
         this.seckillPreDeductStockScript.setResultType(Long.class);
 
-
         this.seckillCompensatePreDeductStockScript = new DefaultRedisScript<>();
         this.seckillCompensatePreDeductStockScript.setLocation(new ClassPathResource("lua/seckill_compensate_pre_deduct_stock.lua"));
         this.seckillCompensatePreDeductStockScript.setResultType(Long.class);
     }
 
     /**
+     * 秒杀库存预扣
      *
      * @param seckillOrderMqDTO
      * @param userOrderTtlSeconds

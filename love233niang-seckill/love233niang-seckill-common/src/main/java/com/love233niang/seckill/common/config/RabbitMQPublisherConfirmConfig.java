@@ -56,7 +56,10 @@ public class RabbitMQPublisherConfirmConfig {
                         returned.getReplyText(),
                         body);
 
-                Object messageId = returned.getMessage().getMessageProperties().getHeaders().get(MessagePublishFailureHandler.MESSAGE_ID_HEADER);
+                Object messageId = returned.getMessage()
+                        .getMessageProperties()
+                        .getHeaders()
+                        .get(MessagePublishFailureHandler.MESSAGE_ID_HEADER);
 
                 if (Objects.isNull(messageId)) {
                     log.error("==> 返回消息缺少关联 ID，无法执行业务补偿, body: {}", body);

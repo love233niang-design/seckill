@@ -43,6 +43,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 秒杀订单服务实现类
+ */
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {

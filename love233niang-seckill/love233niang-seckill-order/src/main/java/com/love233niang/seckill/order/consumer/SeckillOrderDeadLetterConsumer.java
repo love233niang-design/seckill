@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * 秒杀订单死信消息消费者
+ */
 @Slf4j
 @Component
 public class SeckillOrderDeadLetterConsumer {
