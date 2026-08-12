@@ -32,5 +32,9 @@ public class SeckillActivityGoodsMetaDTO {
 
     private LocalDateTime endTime;
 
+    private String goodsName;
+
+    private String goodsImg;
+
 }
 

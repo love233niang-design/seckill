@@ -117,6 +117,8 @@ public class OrderServiceImpl implements OrderService {
                 .userId(userId)
                 .activityId(activityId)
                 .seckillGoodsId(activityGoodsMetaDTO.getSeckillGoodsId())
+                .goodsName(activityGoodsMetaDTO.getGoodsName())
+                .goodsImg(activityGoodsMetaDTO.getGoodsImg())
                 .seckillPrice(activityGoodsMetaDTO.getSeckillPrice())
                 .goodsId(goodsId)
                 .orderNo(orderNo)
@@ -189,7 +191,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("==> 消费秒杀下单消息, orderNo: {}, userId: {}, activityId: {}, goodsId: {}",
                 orderNo, userId, activityId, goodsId);
         // 6. 查询商品信息，用于冗余到订单中
-        GoodsDO goodsDO = goodsDOMapper.selectByPrimaryKey(goodsId);
+//        GoodsDO goodsDO = goodsDOMapper.selectByPrimaryKey(goodsId);
         // 订单过期时间：当前时间 + 30 分钟
         LocalDateTime expireTime = LocalDateTime.now().plusMinutes(30);
 
@@ -218,8 +220,8 @@ public class OrderServiceImpl implements OrderService {
                         .goodsId(goodsId)
                         .orderNo(orderNo)
                         .seckillPrice(message.getSeckillPrice())
-                        .goodsName(goodsDO.getGoodsName())
-                        .goodsImg(goodsDO.getGoodsImg())
+                        .goodsName(message.getGoodsName())
+                        .goodsImg(message.getGoodsImg())
                         .status(OrderStatusEnum.PENDING_PAYMENT.getStatus())
                         .expireTime(expireTime)
                         .isDeleted(0)
@@ -235,6 +237,10 @@ public class OrderServiceImpl implements OrderService {
             if (Objects.isNull(orderDO)) {
                 saveOrderStatus(userId, orderNo, OrderStatusEnum.SECKILL_FAILED.getStatus());
 
+                // 清理 Redis 中的回补上下文
+                deleteCompensationContext(orderNo);
+
+                // 推送 sse 结果
                 seckillOrderResultNotifyService.notifyOrderResult(userId,
                         buildStatusResult(orderNo, OrderStatusEnum.SECKILL_FAILED));
                 return;
@@ -242,6 +248,9 @@ public class OrderServiceImpl implements OrderService {
 
             // 订单创建成功，更新 Redis 中订单状态为待支付
             saveOrderStatus(userId, orderNo, OrderStatusEnum.PENDING_PAYMENT.getStatus());
+
+            // 消费者已经正常落库，删除待回补上下文，避免 Redis 中残留无效数据，占着内存
+            deleteCompensationContext(orderNo);
 
             // 推送 sse 结果
             seckillOrderResultNotifyService.notifyOrderResult(userId, buildOrderResult(orderDO));
@@ -253,9 +262,12 @@ public class OrderServiceImpl implements OrderService {
             log.warn("==> 重复消费秒杀消息，订单已存在，幂等返回, orderNo: {}", orderNo);
 
             // 不能直接写 PENDING_PAYMENT，避免把已支付、已取消等状态回退
-            SeckillOrderDO existedOrderDO = seckillOrderDOMapper.selectByOrderNoAndUserId(orderNo, userId);
+            SeckillOrderDO existedOrderDO = seckillOrderDOMapper.selectByOrderNoAndUserId( orderNo, userId);
             if (Objects.nonNull(existedOrderDO)) {
                 saveOrderStatus(userId, orderNo, existedOrderDO.getStatus());
+
+                // 清理 Redis 中的回补上下文
+                deleteCompensationContext(orderNo);
 
                 // 推送 sse 结果
                 seckillOrderResultNotifyService.notifyOrderResult(userId, buildOrderResult(existedOrderDO));
@@ -337,6 +349,11 @@ public class OrderServiceImpl implements OrderService {
                 RedisKeyConstants.SECKILL_ORDER_STATUS_TTL_MINUTES, TimeUnit.MINUTES);
     }
 
+    /**
+     * 构建秒杀订单处理结果
+     * @param orderDO
+     * @return
+     */
     private FindSeckillOrderResultRspVO buildOrderResult(SeckillOrderDO orderDO) {
         return FindSeckillOrderResultRspVO.builder()
                 .orderId(orderDO.getId())
@@ -350,11 +367,28 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    /**
+     * 构建秒杀订单状态结果
+     *
+     * @param orderNo 订单号
+     * @param status  订单状态
+     * @return
+     */
     private FindSeckillOrderResultRspVO buildStatusResult(String orderNo, OrderStatusEnum status) {
         return FindSeckillOrderResultRspVO.builder()
                 .orderNo(orderNo)
                 .status(status.getStatus())
                 .statusDesc(status.getDescription())
                 .build();
+    }
+
+    /**
+     * 删除秒杀订单待回补上下文
+     *
+     * @param orderNo 订单号
+     */
+    private void deleteCompensationContext(String orderNo) {
+        String compensationKey = RedisKeyConstants.buildSeckillOrderCompensationKey(orderNo);
+        stringRedisTemplate.delete(compensationKey);
     }
 }

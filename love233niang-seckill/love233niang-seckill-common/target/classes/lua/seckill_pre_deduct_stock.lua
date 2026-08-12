@@ -1,13 +1,16 @@
 -- KEYS[1]: 秒杀库存 Key
 -- KEYS[2]: 用户购买标记 Key
+-- KEYS[3]: 待回补上下文 Key
+
 -- ARGV[1]: 用户购买标记的过期时间（秒）
 -- ARGV[2]: 活动开始时间戳（毫秒）
 -- ARGV[3]: 活动结束时间戳（毫秒）
+-- ARGV[4]: 待回补上下文 JSON
+-- ARGV[5]: 当前订单号
+
 -- 返回值：1-预扣成功，0-库存售罄，-1-库存 Key 不存在
 --         2-重复参与，3-活动未开始，4-活动已结束
 
--- 开启单命令复制模式（Redis 7.0+ 必须）
---redis.replicate_commands()
 
 -- 获取当前时间
 local redisTime = redis.call('TIME')
@@ -42,8 +45,11 @@ if tonumber(stock) <= 0 then
     return 0
 end
 
--- 5. 写入用户购买标记，过期时间覆盖整个秒杀活动周期
-redis.call('SET', KEYS[2], 1, 'EX', ARGV[1])
+-- 以上所有校验都通过后，写入回补上下文
+redis.call('SET', KEYS[3], ARGV[4], 'EX', ARGV[1])
+
+-- 5. 写入用户购买标记，过期时间覆盖整个秒杀活动周期（Value 值使用 orderNo, 方便后续回补时，知道这个标记是属于哪个订单）
+redis.call('SET', KEYS[2], ARGV[5], 'EX', ARGV[1])
 
 -- 6. 库存充足，原子递减库存
 redis.call('DECR', KEYS[1])

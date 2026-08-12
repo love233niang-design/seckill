@@ -399,6 +399,9 @@ public class GoodsServiceImpl implements GoodsService {
         // 预热秒杀下单元数据（主要用于下单接口中读取）
         for (SeckillGoodsDO seckillGoodsDO : seckillGoodsDOS) {
             String orderMetaKey = RedisKeyConstants.buildSeckillActivityGoodsMetaKey(activityId, seckillGoodsDO.getGoodsId());
+            // 根据商品 ID 获取对应 DO 实体类
+            GoodsDO goodsDO = goodsMap.get(seckillGoodsDO.getGoodsId());
+
             SeckillActivityGoodsMetaDTO activityGoodsMetaDTO = SeckillActivityGoodsMetaDTO.builder()
                     .seckillGoodsId(seckillGoodsDO.getId())
                     .activityId(activityId)
@@ -406,6 +409,8 @@ public class GoodsServiceImpl implements GoodsService {
                     .seckillPrice(seckillGoodsDO.getSeckillPrice())
                     .beginTime(activityDO.getBeginTime())
                     .endTime(activityDO.getEndTime())
+                    .goodsName(Objects.nonNull(goodsDO) ? goodsDO.getGoodsName() : null)
+                    .goodsImg(Objects.nonNull(goodsDO) ? goodsDO.getGoodsImg() : null)
                     .build();
 
             stringRedisTemplate.opsForValue().set(orderMetaKey, JsonUtils.toJsonString(activityGoodsMetaDTO),
