@@ -105,10 +105,26 @@ public class OrderServiceImpl implements OrderService {
         // 根据活动结束时间，来计算用户购买标记缓存的 TTL，覆盖整个秒杀活动周期
         Long userOrderTtlSeconds = RedisKeyConstants.calculateTtlSeconds(activityGoodsMetaDTO.getEndTime());
 
+        // 使用 Hutool 提供的工具方法，通过雪花算法生成订单号
+        String orderNo = IdUtil.getSnowflakeNextIdStr();
+
+
+        // 构建消息体
+        SeckillOrderMqDTO seckillOrderMqDTO = SeckillOrderMqDTO.builder()
+                .userId(userId)
+                .activityId(activityId)
+                .seckillGoodsId(activityGoodsMetaDTO.getSeckillGoodsId())
+                .seckillPrice(activityGoodsMetaDTO.getSeckillPrice())
+                .goodsId(goodsId)
+                .orderNo(orderNo)
+                .requestTime(now)
+                .build();
+
         // 执行 Redis Lua 脚本：原子校验一人一单并预扣库存
-        SeckillStockDeductResultEnum deductResult = seckillStockService.preDeductStock(activityId, goodsId, userId, userOrderTtlSeconds,
-                DateTimeUtils.toEpochMilli(activityGoodsMetaDTO.getBeginTime())
-                , DateTimeUtils.toEpochMilli(activityGoodsMetaDTO.getEndTime()));
+        SeckillStockDeductResultEnum deductResult = seckillStockService.preDeductStock(
+                seckillOrderMqDTO, userOrderTtlSeconds,
+                DateTimeUtils.toEpochMilli(activityGoodsMetaDTO.getBeginTime()),
+                DateTimeUtils.toEpochMilli(activityGoodsMetaDTO.getEndTime()));
 
 
         // 判断 Lua 脚本执行结果
@@ -132,27 +148,17 @@ public class OrderServiceImpl implements OrderService {
             throw new BizException(ResponseCodeEnum.SECKILL_ORDER_DUPLICATE);
         }
 
-        // 使用 Hutool 提供的工具方法，通过雪花算法生成订单号
-        String orderNo = IdUtil.getSnowflakeNextIdStr();
 
-
-        // 构建消息体
-        SeckillOrderMqDTO seckillOrderMqDTO = SeckillOrderMqDTO.builder()
-                .userId(userId)
-                .activityId(activityId)
-                .seckillGoodsId(activityGoodsMetaDTO.getSeckillGoodsId())
-                .seckillPrice(activityGoodsMetaDTO.getSeckillPrice())
-                .goodsId(goodsId)
-                .orderNo(orderNo)
-                .requestTime(now)
-                .build();
 
         // 记录异步处理状态，前端后续可以根据 orderNo 查询最终结果
         saveOrderStatus(userId, orderNo, OrderStatusEnum.PROCESSING.getStatus());
 
         // 发送 MQ，内部会携带 CorrelationData(orderNo)，方便生产者确认回调定位消息
-        seckillOrderMessageSender.send(seckillOrderMqDTO);
+        boolean isSendSuccess  = seckillOrderMessageSender.send(seckillOrderMqDTO);
 
+        if (!isSendSuccess) {
+            log.warn("==> 秒杀下单消息发送结果未知，订单保持处理中等待后续确认, orderNo: {}", orderNo);
+        }
         // 立即响参 "处理中"，扣库存 + 建订单交给消费者异步处理
         return Response.success(
                 DoSeckillRspVO.builder()
