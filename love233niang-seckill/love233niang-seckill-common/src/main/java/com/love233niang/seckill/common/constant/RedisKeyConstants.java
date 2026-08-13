@@ -110,6 +110,18 @@ public class RedisKeyConstants {
         return SECKILL_ORDER_COMPENSATION_PREFIX + orderNo;
     }
 
+    /**
+     * 秒杀商品售罄标记 Key 前缀
+     */
+    public static final String SECKILL_SOLD_OUT_PREFIX = "seckill:soldout:";
+
+    /**
+     * 构建秒杀商品售罄标记 Key
+     */
+    public static String buildSeckillSoldOutKey(Long activityId, Long goodsId) {
+        return SECKILL_SOLD_OUT_PREFIX + activityId + ":" + goodsId;
+    }
+
 
     /**
      * 根据活动结束时间动态计算缓存 TTL（秒）

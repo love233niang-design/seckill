@@ -72,11 +72,17 @@ public class SeckillStockServiceImpl implements SeckillStockService {
         // 构建待回补上下文 Key
         String compensationKey = RedisKeyConstants.buildSeckillOrderCompensationKey(seckillOrderMqDTO.getOrderNo());
 
+        // 构建秒杀商品售罄标记 Key
+        String soldOutKey = RedisKeyConstants.buildSeckillSoldOutKey(activityId, goodsId);
+
         // 执行 Lua 脚本
         Long resultCode = stringRedisTemplate.execute(seckillPreDeductStockScript,
-                List.of(stockKey, userOrderKey, compensationKey), String.valueOf(userOrderTtlSeconds),
-                String.valueOf(activityBeginTimeMillis), String.valueOf(activityEndTimeMillis),
-                JsonUtils.toJsonString(seckillOrderMqDTO), seckillOrderMqDTO.getOrderNo());
+                List.of(stockKey, userOrderKey, compensationKey, soldOutKey),
+                String.valueOf(userOrderTtlSeconds),
+                String.valueOf(activityBeginTimeMillis),
+                String.valueOf(activityEndTimeMillis),
+                JsonUtils.toJsonString(seckillOrderMqDTO),
+                seckillOrderMqDTO.getOrderNo());
 
         if (Objects.isNull(resultCode)) {
             throw new IllegalStateException("执行秒杀库存预扣 Lua 脚本失败");
@@ -112,11 +118,13 @@ public class SeckillStockServiceImpl implements SeckillStockService {
         String stockKey = RedisKeyConstants.buildSeckillStockKey(activityId, goodsId);
         // 构建用户购买标记 Redis Key
         String userOrderKey = RedisKeyConstants.buildSeckillUserOrderKey(activityId, goodsId, userId);
+        // 构建秒杀商品售罄标记 Key
+        String soldOutKey = RedisKeyConstants.buildSeckillSoldOutKey(activityId, goodsId);
 
         // 执行 lua 脚本
         Long resultCode = stringRedisTemplate.execute(
                 seckillCompensatePreDeductStockScript,
-                List.of(stockKey, userOrderKey),
+                List.of(stockKey, userOrderKey, soldOutKey),
                 orderNo
         );
 

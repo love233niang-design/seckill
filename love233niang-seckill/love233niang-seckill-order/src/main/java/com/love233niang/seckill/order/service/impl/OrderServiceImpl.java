@@ -108,6 +108,29 @@ public class OrderServiceImpl implements OrderService {
         // 根据活动结束时间，来计算用户购买标记缓存的 TTL，覆盖整个秒杀活动周期
         Long userOrderTtlSeconds = RedisKeyConstants.calculateTtlSeconds(activityGoodsMetaDTO.getEndTime());
 
+        // 由于业务需要，避免售罄标记, 抢在活动状态校验、一人一单之前返回，不然提示信息，对用户不友好
+        // 校验活动开始、结束时间
+        if (now.isBefore(activityGoodsMetaDTO.getBeginTime())) {
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_STARTED);
+        }
+
+        if (!now.isBefore(activityGoodsMetaDTO.getEndTime())) {
+            throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_ENDED);
+        }
+
+        // 如果用户已经参与过本场秒杀时，优先返回重复参与，而不是被售罄标记拦截
+        String userOrderKey = RedisKeyConstants.buildSeckillUserOrderKey(activityId, goodsId, userId);
+        if (stringRedisTemplate.hasKey(userOrderKey)) {
+            throw new BizException(ResponseCodeEnum.SECKILL_ORDER_DUPLICATE);
+        }
+
+        // 秒杀商品已经售罄时，直接快速失败，不再继续生成 orderNo 和执行 Lua 脚本
+        String soldOutKey = RedisKeyConstants.buildSeckillSoldOutKey(activityId, goodsId);
+        if (stringRedisTemplate.hasKey(soldOutKey)) {
+            log.info("==> 秒杀商品已售罄，命中售罄标记快速失败, key: {}", soldOutKey);
+            throw new BizException(ResponseCodeEnum.SECKILL_GOODS_SOLD_OUT);
+        }
+
         // 使用 Hutool 提供的工具方法，通过雪花算法生成订单号
         String orderNo = IdUtil.getSnowflakeNextIdStr();
 
@@ -154,12 +177,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
 
-
         // 记录异步处理状态，前端后续可以根据 orderNo 查询最终结果
         saveOrderStatus(userId, orderNo, OrderStatusEnum.PROCESSING.getStatus());
 
         // 发送 MQ，内部会携带 CorrelationData(orderNo)，方便生产者确认回调定位消息
-        boolean isSendSuccess  = seckillOrderMessageSender.send(seckillOrderMqDTO);
+        boolean isSendSuccess = seckillOrderMessageSender.send(seckillOrderMqDTO);
 
         if (!isSendSuccess) {
             log.warn("==> 秒杀下单消息发送结果未知，订单保持处理中等待后续确认, orderNo: {}", orderNo);
@@ -262,7 +284,7 @@ public class OrderServiceImpl implements OrderService {
             log.warn("==> 重复消费秒杀消息，订单已存在，幂等返回, orderNo: {}", orderNo);
 
             // 不能直接写 PENDING_PAYMENT，避免把已支付、已取消等状态回退
-            SeckillOrderDO existedOrderDO = seckillOrderDOMapper.selectByOrderNoAndUserId( orderNo, userId);
+            SeckillOrderDO existedOrderDO = seckillOrderDOMapper.selectByOrderNoAndUserId(orderNo, userId);
             if (Objects.nonNull(existedOrderDO)) {
                 saveOrderStatus(userId, orderNo, existedOrderDO.getStatus());
 
@@ -351,6 +373,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 构建秒杀订单处理结果
+     *
      * @param orderDO
      * @return
      */

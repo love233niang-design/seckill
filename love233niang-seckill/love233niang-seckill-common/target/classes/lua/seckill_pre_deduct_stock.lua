@@ -1,6 +1,7 @@
 -- KEYS[1]: 秒杀库存 Key
 -- KEYS[2]: 用户购买标记 Key
 -- KEYS[3]: 待回补上下文 Key
+-- KEYS[4]: 秒杀商品售罄标记 Key
 
 -- ARGV[1]: 用户购买标记的过期时间（秒）
 -- ARGV[2]: 活动开始时间戳（毫秒）
@@ -11,7 +12,7 @@
 -- 返回值：1-预扣成功，0-库存售罄，-1-库存 Key 不存在
 --         2-重复参与，3-活动未开始，4-活动已结束
 
-
+redis.replicate_commands()
 -- 获取当前时间
 local redisTime = redis.call('TIME')
 -- 转毫秒
@@ -26,6 +27,9 @@ end
 if nowMillis >= tonumber(ARGV[3]) then
     return 4
 end
+
+-- 售罄标记的过期时间，设置到活动结束的时间点
+local soldOutTtlMillis  = tonumber(ARGV[3]) - nowMillis
 
 -- 1. 用户购买标记已存在，说明该用户已经参与过本场秒杀
 if redis.call('EXISTS', KEYS[2]) == 1 then
@@ -42,6 +46,7 @@ end
 
 -- 4. 库存小于等于 0，直接返回售罄，不再继续扣减
 if tonumber(stock) <= 0 then
+    redis.call('SET', KEYS[4], '1', 'PX', soldOutTtlMillis)
     return 0
 end
 
@@ -52,5 +57,11 @@ redis.call('SET', KEYS[3], ARGV[4], 'EX', ARGV[1])
 redis.call('SET', KEYS[2], ARGV[5], 'EX', ARGV[1])
 
 -- 6. 库存充足，原子递减库存
-redis.call('DECR', KEYS[1])
+local remainStock = redis.call('DECR', KEYS[1])
+
+-- 如果刚好扣到 0，写入售罄标记
+if tonumber(remainStock) <= 0 then
+    redis.call('SET', KEYS[4], '1', 'PX', soldOutTtlMillis)
+end
+
 return 1

@@ -1,7 +1,10 @@
 -- KEYS[1]: 秒杀库存 Key
 -- KEYS[2]: 用户购买标记 Key
+-- KEYS[3]: 秒杀商品售罄标记 Key
+
 -- ARGV[1]: 当前需要回补的订单号
 -- 返回值：1-回补成功，0-用户购买标记不存在或不属于当前订单，-1-库存 Key 不存在
+redis.replicate_commands()
 
 -- 1. 读取用户购买标记
 local markedOrderNo  = redis.call('GET', KEYS[2])
@@ -27,4 +30,8 @@ redis.call('DEL', KEYS[2])
 
 -- 6. 归还 Redis 中已经预扣的库存
 redis.call('INCR', KEYS[1])
+
+-- 7. 库存已经回补，清理售罄标记
+redis.call('DEL', KEYS[3])
+
 return 1
