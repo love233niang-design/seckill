@@ -113,7 +113,6 @@ public class OrderServiceImpl implements OrderService {
         if (now.isBefore(activityGoodsMetaDTO.getBeginTime())) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_NOT_STARTED);
         }
-
         if (!now.isBefore(activityGoodsMetaDTO.getEndTime())) {
             throw new BizException(ResponseCodeEnum.SECKILL_ACTIVITY_ENDED);
         }
