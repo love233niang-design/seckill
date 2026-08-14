@@ -167,7 +167,6 @@ public class GoodsServiceImpl implements GoodsService {
             stringRedisTemplate.opsForValue().set(redisKey, JsonUtils.toJsonString(rspVOS), RedisKeyConstants.ENDED_ACTIVITY_TTL_MINUTES, TimeUnit.MINUTES);
         }
 
-
         return Response.success(rspVOS);
     }
 
