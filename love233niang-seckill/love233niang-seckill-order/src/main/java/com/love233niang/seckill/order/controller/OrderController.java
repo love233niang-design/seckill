@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.love233niang.seckill.common.aspect.ApiOperationLog;
 import com.love233niang.seckill.common.utils.IpUtils;
 import com.love233niang.seckill.common.utils.Response;
+import com.love233niang.seckill.order.aspect.SeckillRateLimit;
 import com.love233niang.seckill.order.model.vo.*;
 import com.love233niang.seckill.order.service.OrderService;
 import com.love233niang.seckill.order.service.SeckillOrderResultNotifyService;
@@ -42,12 +43,10 @@ public class OrderController {
      * @return
      */
     @PostMapping
-//    @ApiOperationLog(description = "秒杀下单")
-    public Response<DoSeckillRspVO> doSeckill(@RequestBody @Validated DoSeckillReqVO reqVO,
-                                              HttpServletRequest request) {
-        // 获取用户 IP
-        String clientIp = IpUtils.getClientIp(request);
-        return orderService.doSeckill(reqVO, clientIp);
+    @ApiOperationLog(description = "秒杀下单")
+    @SeckillRateLimit(userMaxCount = 5, userWindowSeconds = 10, ipMaxCount = 50, ipWindowSeconds = 10)
+    public Response<DoSeckillRspVO> doSeckill(@RequestBody @Validated DoSeckillReqVO reqVO) {
+        return orderService.doSeckill(reqVO);
     }
 
     /**

@@ -75,20 +75,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private SeckillRateLimitService seckillRateLimitService;
 
-//    这里暂时写成常量，生产环境中，限流阈值通常要支持动态配置化。
-    /**
-     * 用户维度限流：10 秒内最多请求 5 次
-     */
-    private static final long USER_RATE_LIMIT_MAX_COUNT = 5;
 
-    private static final long USER_RATE_LIMIT_WINDOW_SECONDS = 10;
-
-    /**
-     * IP 维度限流：10 秒内最多请求 50 次
-     */
-    private static final long IP_RATE_LIMIT_MAX_COUNT = 50;
-
-    private static final long IP_RATE_LIMIT_WINDOW_SECONDS = 10;
 
 
     /**
@@ -98,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
-    public Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO, String clientIp) {
+    public Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO) {
         // 活动 ID
         Long activityId = reqVO.getActivityId();
         // 商品 ID
@@ -112,7 +99,6 @@ public class OrderServiceImpl implements OrderService {
         log.info("==> 当前登录用户 ID: {}", userId);
 
         // 在入口处做限流，避免高频请求继续进入秒杀主链路
-        checkSeckillRateLimit(activityId, goodsId, userId, clientIp);
 
         // 从 Redis 中查询秒杀商品元数据
         String redisKey = RedisKeyConstants.buildSeckillActivityGoodsMetaKey(activityId, goodsId);
@@ -436,33 +422,4 @@ public class OrderServiceImpl implements OrderService {
         stringRedisTemplate.delete(compensationKey);
     }
 
-    /**
-     * 秒杀下单入口限流
-     *
-     * @param activityId 活动 ID
-     * @param goodsId    商品 ID
-     * @param userId     用户 ID
-     * @param clientIp   客户端 IP
-     */
-    private void checkSeckillRateLimit(Long activityId, Long goodsId, Long userId, String clientIp) {
-        // 用户维度限流
-        String userRateLimitKey = RedisKeyConstants.buildSeckillRateLimitUserKey(activityId, goodsId, userId);
-        boolean userAllowed = seckillRateLimitService.tryAcquire(userRateLimitKey,
-                USER_RATE_LIMIT_MAX_COUNT, USER_RATE_LIMIT_WINDOW_SECONDS);
-
-        // 请求过于频繁
-        if (!userAllowed) {
-            throw new BizException(ResponseCodeEnum.SECKILL_REQUEST_TOO_FREQUENT);
-        }
-
-        // IP 维度限流
-        String ipRateLimitKey = RedisKeyConstants.buildSeckillRateLimitIpKey(activityId, goodsId, clientIp);
-        boolean ipAllowed = seckillRateLimitService.tryAcquire(ipRateLimitKey,
-                IP_RATE_LIMIT_MAX_COUNT, IP_RATE_LIMIT_WINDOW_SECONDS);
-
-        // 请求过于频繁
-        if (!ipAllowed) {
-            throw new BizException(ResponseCodeEnum.SECKILL_REQUEST_TOO_FREQUENT);
-        }
-    }
 }

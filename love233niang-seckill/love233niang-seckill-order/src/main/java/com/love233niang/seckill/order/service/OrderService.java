@@ -19,10 +19,9 @@ public interface OrderService {
      * 秒杀下单
      *
      * @param reqVO
-     * @param clientIp 客户端 IP
      * @return
      */
-    Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO, String clientIp);
+    Response<DoSeckillRspVO> doSeckill(DoSeckillReqVO reqVO);
 
     /**
      * 异步消费秒杀下单消息：扣减库存 + 创建订单
