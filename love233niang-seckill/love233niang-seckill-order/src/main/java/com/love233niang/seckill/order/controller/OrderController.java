@@ -2,11 +2,13 @@ package com.love233niang.seckill.order.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.love233niang.seckill.common.aspect.ApiOperationLog;
+import com.love233niang.seckill.common.utils.IpUtils;
 import com.love233niang.seckill.common.utils.Response;
 import com.love233niang.seckill.order.model.vo.*;
 import com.love233niang.seckill.order.service.OrderService;
 import com.love233niang.seckill.order.service.SeckillOrderResultNotifyService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -40,9 +42,12 @@ public class OrderController {
      * @return
      */
     @PostMapping
-    @ApiOperationLog(description = "秒杀下单")
-    public Response<DoSeckillRspVO> doSeckill(@RequestBody @Validated DoSeckillReqVO reqVO) {
-        return orderService.doSeckill(reqVO);
+//    @ApiOperationLog(description = "秒杀下单")
+    public Response<DoSeckillRspVO> doSeckill(@RequestBody @Validated DoSeckillReqVO reqVO,
+                                              HttpServletRequest request) {
+        // 获取用户 IP
+        String clientIp = IpUtils.getClientIp(request);
+        return orderService.doSeckill(reqVO, clientIp);
     }
 
     /**
